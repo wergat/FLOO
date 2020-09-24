@@ -1,0 +1,38 @@
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='; script-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='">
+  <link rel="stylesheet" href="./style.css">
+  <title>Force Lead Operation Overlay!</title>
+</head>
+
+<body>
+  <div id="mapBody"></div>
+
+  <div id="leftBox" class="clickable">
+    <div id="addPlatoon">
+      <button id="addPlatoonButton" class="leftBoxButton">Add Platoon</button>
+    </div>
+    <div class="dropdownContinent" id="continentSelectDiv">
+      <button class="leftBoxButton" id="continentSelectButton">Select Continent</button>
+      <div class="dropdownContinent-content" id="continentSelectDropdown">
+        <a href="#">something crashed :c</a>
+      </div>
+    </div>
+    <div id="PlatoonBox">
+
+    </div>
+    <div id="MousePosBox"></div>
+  </div>
+  <div id="contextMenu">
+    <button class="contextMenuButton">Remove Platoon</button>
+    <button class="contextMenuButton">Move to WG</button>
+  </div>
+
+  <!-- Top Right Corner Debug Display for Focus/Not Focus-->
+  <div id="debugDisplay"></div>
+  <!-- You can also require other files to run in this process -->
+  <script> require("./dist/renderer.js")</script>
+</body>
+
+</html>
