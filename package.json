@@ -1,7 +1,7 @@
 {
   "name": "FLOO",
   "version": "1.0.0",
-  "description": "Force Lead Organizing Overlay",
+  "description": "Force Lead Organizing Overlay OwO",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
@@ -9,10 +9,10 @@
     "postinstall": "electron-rebuild",
     "start": "npm run build && electron ./dist/main.js"
   },
-  "repository": "",
+  "repository": "https://github.com/wergat/FLOO",
   "keywords": [],
   "author": "Wergat",
-  "license": "CC0-1.0",
+  "license": "MIT License",
   "devDependencies": {
     "electron": "^8.5.2",
     "electron-rebuild": "^2.0.3",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@types/color": "^3.0.1",
+    "active-win": "^6.2.0",
     "color": "^3.1.2",
     "iohook": "^0.6.6",
     "node-abi": "^2.19.1"
