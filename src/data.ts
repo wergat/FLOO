@@ -1,79 +1,18 @@
+import { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement } from "./classes";
 import * as color from 'color';
-interface coord { x: number; y: number; };
+const Store = require('electron-store');
 
-interface rect {
-    topLeft: { x: number, y: number },
-    bottomRight: { x: number, y: number }
-}
 
-interface PlatoonHTMLElement extends HTMLElement {
-    platoon: number; squad: number;
-}
-
-class Platoon {
-    squads: Squad[];
-    color: color;
-    borderColor: color;
-
-    SetColor(tColor: color) {
-        this.color = tColor;
-        this.borderColor = tColor.darken(0.5);
-    }
-    constructor(color: color) {
-        this.SetColor(color);
-        // Alpha, Bravo, Charly, Delta
-        this.squads = [];
-    }
-}
-
-class Squad {
-    platoonNumber: Number;
-    squadLetter: String;
-    isRendered: boolean;
-    isInPosition: boolean;
-    name: String;
-    pos: coord;
-    isEmpty: boolean;
-
-    static validLetters = ["a", "b", "c", "d"];
-    constructor(platoonNumber: number, squadLetter: string, _pos: coord) {
-        if (!Squad.validLetters.includes(squadLetter)) { console.error("Unknown squad letter", squadLetter); }
-        if (platoonNumber < 0) { console.error("Platoon number must be larger than 0", platoonNumber); }
-
-        this.platoonNumber = platoonNumber;
-        this.squadLetter = squadLetter;
-        this.isRendered = true;
-        this.isInPosition = true;
-
-        this.isEmpty = false;
-        this.pos = _pos;
-        this.name = "[NoName]";
-    }
-}
-
-interface warpgate {
-    name: string;
-    x: number;
-    y: number;
-}
-
-interface continent {
-    name: string;
-    mapBoxSize: coord;
-    UIColor: { primary: string, secondary: string };
-    warpgates: warpgate[];
-}
-
-interface resolutionSettings {
-    resolution: string;
-    mapBoundingBox: rect;
-}
+/** Used to store the settings, like resolution, screen, warpgate, continent */
+const settingsStore = new Store({ name: 'config' });
+/** Used to store data about each platoon in case of restart etc. */
+const platoonStore = new Store({ name: 'platoons' });
 
 /** IDK if there is a way to properly import this, so instead i just hardcoded it 
- * imports and returns continent data
-*/
-function importContinentData(data: any): continent[] {
-    let continentArray: continent[] = [];
+     * imports and returns continent data
+    */
+function importContinentData(data: any): Continent[] {
+    let continentArray: Continent[] = [];
     for (let i = 0; i < data.length; i++) {
         continentArray[i] = {
             name: data[i].name as string,
@@ -92,8 +31,8 @@ function importContinentData(data: any): continent[] {
 /** IDK if there is a way to properly import this, so instead i just hardcoded it
  * imports and returns continent data
  */
-function importResolutionSettings(data: any): resolutionSettings[] {
-    let resolutionData: resolutionSettings[] = [];
+function importResolutionSettings(data: any): ResolutionSettings[] {
+    let resolutionData: ResolutionSettings[] = [];
     for (let i = 0; i < data.length; i++) {
         resolutionData[i] = {
             resolution: data[i].resolution as string,
@@ -107,7 +46,106 @@ function importResolutionSettings(data: any): resolutionSettings[] {
 }
 
 
-export { coord, rect, Platoon, Squad, warpgate, continent, resolutionSettings, PlatoonHTMLElement, importContinentData, importResolutionSettings }
+class Data {
+    /** Data about the continents */
+    continentData: Continent[] = importContinentData(require("../ContinentData.json"));
+    /** Data for varios UI scaling etc when choosing different resolutions */
+    resolutionData: ResolutionSettings[] = importResolutionSettings(require("../resolutionSettings.json"));
+
+    /** All the data about the platoons and squads */
+    platoons: Platoon[] = [];
+    /** 0 = "2560x1377" */
+    resolutionSelected: number = 0;
+    /** ID of continent selected */
+    continentSelectedID = 0;
+    /** ID of warpgate selected */
+    warpgateSelectedID = 0;
+
+    /** Colors for each platoon. */
+    platColors = [color("#416ACC"), color("#47CCB5"), color("#4FCC3D"), color("#CCBF33"), color("#CC8B2F")];
+
+
+    reloadAllData() {
+        // Loading the general data files with continent and resolution info
+        this.continentData = importContinentData(require("../ContinentData.json"));
+        this.resolutionData = importResolutionSettings(require("../resolutionSettings.json"));
+
+        // Platoon data
+        this.platoons = platoonStore.store;
+
+        // Other Settings
+        this.resolutionSelected = settingsStore.get('resolution');
+        this.continentSelectedID = settingsStore.get('continent');
+        this.warpgateSelectedID = settingsStore.get('warpgate');
+    }
+
+    /** Returns squad s in platoon p from saved platoon list
+     * @returns Squad s in platoon p
+     * @param {number} p platoon ID 
+     * @param {number} s ID of squad in platoon p
+    */
+    getSquad(p: number, s: number): Squad {
+        if (s < 0 || s > 4) { throw new Error("Squad Index out of bounds."); }
+        return this.getPlatoon(p).squads[s];
+    }
+
+    /** Returns platoon with id i */
+    getPlatoon(i: number): Platoon {
+        if (i < 0 || i >= this.platoons.length) { throw new Error("Platoon Index out of bounds."); }
+        return this.platoons[i];
+    }
+
+    /** @returns amount of platoons in list right now */
+    getPlatoonCount(): number {
+        return this.platoons.length;
+    }
+
+    /** Returns the currently selected continent as object */
+    getCurrentContinent(): Continent {
+        return this.continentData[this.continentSelectedID];
+    }
+
+    /** Returns the currently selected warpgate as object*/
+    getCurrentWarpgate(): Warpgate {
+        return this.getCurrentContinent().warpgates[this.warpgateSelectedID];
+    }
+
+    /** Returns a random position near the warpgate that is not near any other squad marker right now */
+    getFreePositionNearWarpgate() {
+        let WGData = this.getCurrentWarpgate();
+        let WGPos = { x: WGData.x, y: WGData.y };
+        // Range of wich no other squad is allowed to be
+        const FreeRadius = 150;
+        let range = 5;
+
+        let tempPos = { x: 0, y: 0 };
+        let squad;
+        let foundFreeSpace = false;
+
+        let b = -4;
+
+        while (!foundFreeSpace) {
+            foundFreeSpace = true;
+            //tempPos = {x: Math.floor(Math.random() * range - range / 2) + WGPos.x, y: Math.floor(Math.random() * range - range / 2) + WGPos.y};
+            tempPos = { x: WGPos.x + b * range * Math.cos(range / 10), y: WGPos.y + b * range * Math.sin(range / 10) };
+            for (var i = 0; i < this.getPlatoonCount(); i++) {
+                for (var j = 0; j < 4; j++) {
+                    squad = this.getSquad(i, j);
+                    if (!squad.isEmpty) {
+                        let dist = Math.hypot(squad.pos.x - tempPos.x, squad.pos.y - tempPos.y);
+                        if (dist < FreeRadius) {
+                            foundFreeSpace = false;
+                        }
+                    }
+                }
+            }
+            range = 1.01 * range + 5;
+        }
+        return tempPos;
+    }
+}
+
+export default new Data();
 
 
 

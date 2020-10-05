@@ -1,9 +1,10 @@
-import { coord, rect, Platoon, Squad, warpgate, continent, resolutionSettings, PlatoonHTMLElement, importContinentData, importResolutionSettings } from "./data";
+import { Coord, Rect } from "./classes"
+import data from "./data";
 
-class cameraClass {
+class Camera {
     //   Constants
     /** Top Left Corner of Camera */
-    onMapPos: coord = { x: 0, y: 0 };
+    onMapPos: Coord = { x: 0, y: 0 };
     /** Current Zoom Level of Map */
     currentZoomLevel = 0;
     /** Zoom level resrictions */
@@ -24,18 +25,18 @@ class cameraClass {
     invZoomFactor = 1;
 
     /** Size Of Map Rendered */
-    mapRenderSize: coord = { x: 0, y: 0 };
+    mapRenderSize: Coord = { x: 0, y: 0 };
     /** Size of window */
-    windowSize: coord = { x: 0, y: 0 };
+    windowSize: Coord = { x: 0, y: 0 };
 
     /** = getResolutionBoundingBox() : Bounding box for ingame map in screen space, assuming topLeft = (0|0)*/
-    screenSpaceCorners: rect;
+    screenSpaceCorners: Rect;
     /** Size of the currently selected continent */
-    continentSize: coord;
+    continentSize: Coord;
     /** screenSpaceCorners based on mapspace instead of screenspace + current camera position*/
-    mapSpaceCorners: rect;
+    mapSpaceCorners: Rect;
 
-    getCurrentPositionOnMap(): coord {
+    getCurrentPositionOnMap(): Coord {
         return this.onMapPos;
     }
 
@@ -48,16 +49,16 @@ class cameraClass {
 
     /** Max Size of map that could be rendered, changed by zooming in/out */
     setMapRenderSize(_x: number, _y: number) {
-        this.mapRenderSize = {x: _x, y: _y};
+        this.mapRenderSize = { x: _x, y: _y };
     }
 
     setWindowSize(_x: number, _y: number) {
-        this.windowSize = {x: _x, y: _y};
+        this.windowSize = { x: _x, y: _y };
     }
 
     /** Does not clamp the camera position */
     setCamerPosition(_x: number, _y: number): void;
-    setCamerPosition(_x: coord, _y: void): void;
+    setCamerPosition(_x: Coord, _y: void): void;
     setCamerPosition(_x: any, _y: any) {
         if (_y == null) {
             this.onMapPos = _x;
@@ -66,14 +67,14 @@ class cameraClass {
         }
     }
 
-    setScreenSpaceCorners(_screenSpaceCorners: rect) {
+    setScreenSpaceCorners(_screenSpaceCorners: Rect) {
         this.screenSpaceCorners = _screenSpaceCorners;
         this.recalculateMapSpaceCorners();
     }
 
     /** Updates the size of the continent for the camera */
     setContinentSize(_x: number, _y: number) {
-        this.continentSize = {x: _x, y: _y};
+        this.continentSize = { x: _x, y: _y };
     }
 
     /** Updates mapSpaceCorners based on current screenspace corners and zoom level */
@@ -94,7 +95,7 @@ class cameraClass {
         return this.zoomFactor;
     }
 
-    ClampCameraPosition() {
+    clampCameraPosition() {
         //var continentSize = getCurrentContinentSize();
 
         let didReset = false;
@@ -110,11 +111,16 @@ class cameraClass {
 
     /** Handles the mousewheel on zoom in/out
      * DOES NOT clamp the position afterwards
+     * @returns true if zoom level was changed
      */
-    handleMouseWheel(message: any) {
+    handleMouseWheel(message: any): boolean {
         let mousePos = { x: message.x, y: message.y };
-        this.currentZoomLevel += message.rotation;
-        this.setZoomLevel(this.currentZoomLevel);
+        let oldLevel = this.currentZoomLevel;
+        this.setZoomLevel(this.currentZoomLevel + message.rotation);
+        if (oldLevel == this.currentZoomLevel) {
+            return false;
+        }
+
         let prevMapRenderSize = { x: this.mapRenderSize.x, y: this.mapRenderSize.y }
 
         // Update the zoom factors
@@ -131,7 +137,8 @@ class cameraClass {
         this.onMapPos.y = this.onMapPos.y + relativeMousePos.y * prevMapRenderSize.y - relativeMousePos.y * this.mapRenderSize.y
 
         // Update the mapspace corners
-        this.recalculateMapSpaceCorners()
+        this.recalculateMapSpaceCorners();
+        return true;
     }
 
     //** Centers the map on a map space position. */
@@ -140,7 +147,18 @@ class cameraClass {
         this.onMapPos.x = xPos - (this.mapRenderSize.x / 2);
         this.onMapPos.y = yPos - (this.mapRenderSize.y / 2);
     }
+
+    /** Centers the camera on the currently selected warpgate position, then clamps the camera
+     * 
+     * DOES NOT RERENDER AFTERWARDS
+    */
+    centerCamOnWarpgate() {
+        this.centerMapOnPosition(data.getCurrentWarpgate().x,data.getCurrentWarpgate().y);
+        this.clampCameraPosition();
+    }
+    
+
 }
 
-const camera: cameraClass = new cameraClass();
-export default camera;
+
+export default new Camera();

@@ -1,32 +1,46 @@
 [
     {
         "name" : "Indar",
+        "id" : 0,
         "mapBoxSize" : {"x": 23500, "y": 23500},
         "UIColor" : {"primary" : "#F5D77E", "secondary" : "#786137"},
         "warpgates" : [
-            {"name" : "Northern Warpgate", "x" : 12090, "y" : 3280},
-            {"name" : "Western Warpgate", "x" : 4010,"y" : 18280},
-            {"name" : "*Eastern Warpgate", "x" : 18000,"y" : 18000}
+            {"name" : "Northern Warpgate", "x" : 12090, "y" : 3280, "id" : 0},
+            {"name" : "Western Warpgate", "x" : 4010,"y" : 18280, "id" : 1},
+            {"name" : "*Eastern Warpgate", "x" : 18000,"y" : 18000, "id" : 2}
         ]
     },
     {
-        "name" : "Esamir (Old)",
+        "name" : "*Amerish",
+        "id" : 1,
         "mapBoxSize" : {"x": 23500, "y": 23500},
         "UIColor" : {"primary" : "#C2F5D9", "secondary" : "#3C516B"},
         "warpgates" : [
-            {"name" : "North Western Warpgate", "x" : 5410, "y" : 5850},
-            {"name" : "Eastern Warpgate", "x" : 17840,"y" : 6280},
-            {"name" : "Southern Warpgate", "x" : 6530,"y" : 18230}
+            {"name" : "North Western Warpgate", "x" : 5410, "y" : 5850, "id" : 0},
+            {"name" : "Eastern Warpgate", "x" : 17840,"y" : 6280, "id" : 1},
+            {"name" : "Southern Warpgate", "x" : 6530,"y" : 18230, "id" : 2}
+        ]
+    },
+    {
+        "name" : "*Esamir",
+        "id" : 2,
+        "mapBoxSize" : {"x": 23500, "y": 23500},
+        "UIColor" : {"primary" : "#C2F5D9", "secondary" : "#3C516B"},
+        "warpgates" : [
+            {"name" : "North Western Warpgate", "x" : 5410, "y" : 5850, "id" : 0},
+            {"name" : "Eastern Warpgate", "x" : 17840,"y" : 6280, "id" : 1},
+            {"name" : "Southern Warpgate", "x" : 6530,"y" : 18230, "id" : 2}
         ]
     },
     {
         "name" : "Hossin",
+        "id" : 3,
         "mapBoxSize" : {"x": 23500, "y": 23500},
         "UIColor" : {"primary" : "#BBBBBB", "secondary" : "#444444"},
         "warpgates" : [
-            {"name" : "*Western Warpgate", "x" : 0, "y" : 0},
-            {"name" : "Eastern Warpgate", "x" : 19800,"y" : 6150},
-            {"name" : "Southern Warpgate", "x" : 11570,"y" : 20460}
+            {"name" : "*Western Warpgate", "x" : 0, "y" : 0, "id" : 0},
+            {"name" : "Eastern Warpgate", "x" : 19800,"y" : 6150, "id" : 1},
+            {"name" : "Southern Warpgate", "x" : 11570,"y" : 20460, "id" : 2}
         ]
     }
 ]
