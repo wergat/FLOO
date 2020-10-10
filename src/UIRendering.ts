@@ -125,7 +125,7 @@ function extendPlatoonList(pID: number) {
 
 /** Closes the Context Window again with animation, then removes it from the screen after .05s */
 function closeContextWindow() {
-    let menuEle = document.getElementById("contextMenu")
+    let menuEle = document.getElementById("contextMenu");
     menuEle.style.height = "0px";
     setTimeout(function () { menuEle.style.left = "-1000px"; menuEle.style.top = "-1000px"; }, 50);
 }
@@ -134,15 +134,9 @@ function closeContextWindow() {
 /** Opens the Context Menu for an element */
 function openSquadContextWindow(e: MouseEvent) {
     const relativePos = { x: 30, y: 0 };
-    let ele = e.target as PlatoonHTMLElement;
-    // If we click on a child element (e.g. the letter, search for next best parent)
-    while(!ele.classList.contains("squadMarker")){
-        // IDK how this would happen, but saftey first
-        if(ele.parentElement == null){ return; }
-        ele = ele.parentElement as PlatoonHTMLElement;
-    }
-    let i = ele.platoon; let j = ele.squad;
     let menuEle = document.getElementById("contextMenu");
+    let [i,j] = data.getPlatoonAndSquadOfMarkerElement(e.target as PlatoonHTMLElement);
+    
     menuEle.style.left = (camera.invZoomFactor * (data.getSquad(i, j).pos.x - camera.onMapPos.x) - squadMarkerSize + relativePos.x) + "px";
     menuEle.style.top = (camera.invZoomFactor * (data.getSquad(i, j).pos.y - camera.onMapPos.y) - squadMarkerSize + relativePos.y) + "px";
     menuEle.style.height = "200px";

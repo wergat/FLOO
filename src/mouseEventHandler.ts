@@ -1,9 +1,15 @@
-import { Coord } from "./classes"
+import { Coord, PlatoonHTMLElement, Squad } from "./classes"
 import camera from "./camera";
 import * as UI from "./UI";
 import * as UIRendering from "./UIRendering";
 import * as mapRendering from "./mapRendering";
 import { setMapAsDragged, FOCUS } from "./UIFunctions";
+import data from "./data";
+import { eventNames } from "iohook";
+
+
+/** (Half the) Size of the Squad marker in pixels */
+let squadMarkerSize = 17;
 
 /**TODO:  ??? */
 let canDragMap: boolean;
@@ -18,8 +24,6 @@ let dragStartPosition: Coord = { x: 0, y: 0 };
 /** Total screenspace mouse drag movement, reset on mouseup */
 let dragMovement: Coord = { x: 0, y: 0 };
 
-/** Currently Dragging an element? */
-let IsDraggingElement = false;
 /** TODO: ??? */
 let mousePos = { x: 0, y: 0 };
 
@@ -53,12 +57,15 @@ function handleRendererMouseEvent(message: any) {
                 dragMovement = { x: 0, y: 0 };
 
                 // If we are hovering over the map and are not dragging something around right now, drag the map if we drag the mouse around TODO: Add actual area for map to be checked against, so you dont drag stuff from offscreen
-                if (FOCUS == false && !IsDraggingElement) {
+                if (FOCUS == false) {
                     canDragMap = true;
                 }
 
                 // Close the context menu if it is open right now
-                UIRendering.closeContextWindow();
+                if (contextMenuOpen) {
+                    contextMenuOpen = false;
+                    UIRendering.closeContextWindow();
+                }
             }
             console.log(message.activeWindow);
             updateMouseDebugBox(message);
@@ -118,15 +125,78 @@ function handleMouseWheel(message: any) {
     }
 }
 
-function handleSquadMarkerEvent(event: MouseEvent) {
-    switch (event.button) {
-        case 0: // Left Click
-            if (contextMenuOpen) {
-                contextMenuOpen = false;
-                UIRendering.closeContextWindow();
+
+/** Makes an element (squadmarker) dragable by adding mouse events to the squad marker*/
+function makeSquadMarkerDragAble(squadMarker: PlatoonHTMLElement) {
+    let deltaMove = { x: 0, y: 0 };
+    let lastPos = { x: 0, y: 0 };
+    let startPos = { x: 0, y: 0 }
+    squadMarker.onmousedown = startElementDrag;
+    let isDraggingThisElement = false;
+
+    function startElementDrag(e: MouseEvent) {
+        e.preventDefault();
+        // Only allow moving squad with left click
+        if (e.button != 0) { return; }
+
+        // Get the position on mouse down
+        lastPos = { x: e.clientX, y: e.clientY };
+        startPos = { x: e.clientX, y: e.clientY };
+
+        // Capture mouseup and mouse move events for the whole document while we are at it.
+        document.onmouseup = endElementDrag;
+        document.onmousemove = elementDrag;
+
+        // Lets start dragging this element, not the map.
+        isDraggingThisElement = true;
+    }
+
+    function elementDrag(e: MouseEvent) {
+        e.preventDefault();
+
+        // Calculate Distance moved
+        deltaMove.x = lastPos.x - e.clientX;
+        deltaMove.y = lastPos.y - e.clientY;
+        lastPos.x = e.clientX;
+        lastPos.y = e.clientY;
+
+        // Update Element position
+        squadMarker.style.left = (squadMarker.offsetLeft - deltaMove.x) + "px";
+        squadMarker.style.top = (squadMarker.offsetTop - deltaMove.y) + "px";
+    }
+
+    function endElementDrag(event: MouseEvent) {
+        deltaMove = { x: 0, y: 0 };
+        event.preventDefault();
+        // Release the mouseup/mouse move events
+        document.onmouseup = null;
+        document.onmousemove = null;
+
+        // Update the position to the saved data to make sure the position stays fixed when map gets moved/zoomed in
+        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.x = camera.zoomFactor * (squadMarker.offsetLeft - deltaMove.x + squadMarkerSize) + camera.onMapPos.x;
+        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.y = camera.zoomFactor * (squadMarker.offsetTop - deltaMove.y + squadMarkerSize) + camera.onMapPos.y;
+        // We aint dragging anymore, free up the map movement
+        isDraggingThisElement = false;
+        // Check if we dragged it all. If we didnt drag, then it was a click instead, so handle the event as a click instead
+        if (lastPos.x - startPos.x == 0 && lastPos.y - startPos.y == 0) {
+            handleSquadMarkerClick(event);
+        }else{
+            // Do nothing if shift is pressed
+            if(!event.shiftKey){ // If shift is not pressed, the squad is on the way
+                handleSquadMarkerClick(event, false, false);
             }
-            // TODO: Add blinking squad marker
-            break;
+        }
+    }
+}
+
+/** Handles event for squad markers like drag or clicks 
+ * @argument ignoreLeftClick: if set to false, the left click event will handles. Left click gets called specificly from UIFunctions when an squad marker stops being dragged, if the drag distance was 0
+ * 
+*/
+function handleSquadMarkerEvent(event: MouseEvent) {
+    console.log(event);
+    switch (event.button) {
+        // Left clicks get handled by makeSquadMarkerDraggable
         case 2: // Right click/ context menu
             contextMenuOpen = true;
             UIRendering.openSquadContextWindow(event);
@@ -136,5 +206,21 @@ function handleSquadMarkerEvent(event: MouseEvent) {
 }
 
 
+/** Left click on squad marker to indicate squad is moving to that position */
+function handleSquadMarkerClick(event: MouseEvent, toggle = true, value = true) {
+    // Get pID and sID of element we clicked on
+    let [platoonID, squadID] = data.getPlatoonAndSquadOfMarkerElement(event.target as PlatoonHTMLElement);
+    // Get the squad data
+    let squad: Squad = data.getSquad(platoonID, squadID);
+    // Set and save data
+    if (toggle) {
+        squad.isInPosition = !squad.isInPosition;
+    } else {
+        squad.isInPosition = value;
+    }
+    data.setSquad(platoonID, squadID, squad);
+    // Update rendering for this squad marker only
+    mapRendering.updateSquadMarker(platoonID, squadID);
+}
 
-export { handleRendererMouseEvent, handleSquadMarkerEvent, mousePos, dragMovement, dragStartPosition }
+export { handleRendererMouseEvent, makeSquadMarkerDragAble, handleSquadMarkerEvent, mousePos, dragMovement, dragStartPosition }

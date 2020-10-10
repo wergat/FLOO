@@ -111,9 +111,9 @@ class Data {
     }
 
     /** Returns a random position near the warpgate that is not near any other squad marker right now */
-    getFreePositionNearWarpgate() {
+    getFreePositionNearWarpgate() : Coord {
         let WGData = this.getCurrentWarpgate();
-        let WGPos = { x: WGData.x, y: WGData.y };
+        let WGPos : Coord = { x: WGData.x, y: WGData.y } ;
         // Range of wich no other squad is allowed to be
         const FreeRadius = 150;
         let range = 5;
@@ -143,6 +143,36 @@ class Data {
         }
         return tempPos;
     }
+
+    /** Saves platoon data of a platoon with platoon id. Also writes data to disk */
+    setPlatoon(platoonID: number, platoon: Platoon) {
+        this.platoons[platoonID] = platoon;
+        platoonStore.store = this.platoons;
+    }
+
+    /** Saves squad data of a squad with platoon id and squad id. Also writes data to disk */
+    setSquad(platoonID: number, squadID: number, squad: Squad) {
+        this.platoons[platoonID].squads[squadID] = squad;
+        platoonStore.store = this.platoons;
+    }
+
+    /**  
+     * 
+     * @argument ele Squad Marker element or child of squad marker element as PlatoonHTMLElement
+     * @returns touple of [platoonID, squadID] as [number,number]
+     */
+    getPlatoonAndSquadOfMarkerElement(ele: PlatoonHTMLElement): [number, number] {
+        // In case a child element got put in
+        while (!ele.classList.contains("squadMarker")) {
+            // IDK how this would happen, but saftey first
+            if (ele.parentElement == null) {
+                throw new Error("Element not squad marker or child of squad marker");
+            }
+            ele = ele.parentElement as PlatoonHTMLElement;
+        }
+        return [ele.platoon, ele.squad];
+    }
+
 }
 
 export default new Data();

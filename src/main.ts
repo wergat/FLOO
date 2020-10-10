@@ -70,6 +70,8 @@ if (require('electron-squirrel-startup')) {
     ioHook.on('mousewheel', eventHandler);
     ioHook.on('mousemove', eventHandler);
     ioHook.on('mousedrag', eventHandler);
+    ioHook.on('keydown', eventHandler);
+    ioHook.on('keyup', eventHandler);
   })
 
   app.on('before-quit', () => {

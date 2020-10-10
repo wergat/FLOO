@@ -1,8 +1,8 @@
 import { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement } from "./classes";
 import data from "./data";
 import camera from "./camera";
-import { addPlatoon, makeSquadMarkerDragAble, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
-import { handleSquadMarkerEvent } from "./mouseEventHandler";
+import { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
+import { handleSquadMarkerEvent, makeSquadMarkerDragAble } from "./mouseEventHandler";
 
 /** Border size of the Map Bounds Box */
 let mapBoundsBoxBorderSize = 5;
@@ -19,7 +19,9 @@ function reRenderMapBody() {
     for (var i = 0; i < data.getPlatoonCount(); i++) {
         for (var j = 0; j < 4; j++) {
             if (!data.getSquad(i, j).isEmpty) {
-                str += "<div id='MarkerP" + i + "S" + j + "' class='squadMarker clickable'> <div class='squadMarkerLetter squadMarkerLetter" + data.getSquad(i, j).squadLetter + "'>" + data.getSquad(i, j).squadLetter + "</div> </div> <br>";
+                str += "<div id='MarkerP" + i + "S" + j + "' class='squadMarker clickable'>" +
+                    "<div class='squadMarkerLetter squadMarkerLetter" + data.getSquad(i, j).squadLetter + "'>" + data.getSquad(i, j).squadLetter + "</div>" +
+                    "<div class='squadMarkerAnimationDiv' id='squadMarkerAnimationP" + i + "S" + j + "'></div></div> <br>";
             }
         }
     }
@@ -37,7 +39,6 @@ function reRenderMapBody() {
                 ele.addEventListener('mouseleave', () => { setWindowsFocus(false); });
                 ele.addEventListener('mouseenter', () => { setWindowsFocus(true); });
                 ele.addEventListener('contextmenu', function (e) { handleSquadMarkerEvent(e); e.preventDefault(); console.log(e); }, false);
-                ele.addEventListener('click', function (e) { handleSquadMarkerEvent(e); }, false);
 
                 var SquadStyle = ele.style;
                 SquadStyle.backgroundColor = data.getPlatoon(i).color.toString();
@@ -54,7 +55,6 @@ function updateSquadMarkerPositions() {
     // Add Style
     // Continent Bounding Box
     let ele = document.getElementById("MapBoundsBox");
-    let factor = camera.invZoomFactor;
     let x = camera.invZoomFactor;
     let y = camera.invZoomFactor;
 
@@ -65,29 +65,41 @@ function updateSquadMarkerPositions() {
     ele.style.top = (y * (-cameraOnMapPos.y)) + "px";
 
     // Platoon/Squad Positions
-    x = 0; y = 0;
-    let squad: Squad;
     for (var i = 0; i < data.getPlatoonCount(); i++) {
         for (var j = 0; j < 4; j++) {
-            squad = data.getSquad(i, j);
-            if (!squad.isEmpty) {
-                ele = document.getElementById(`MarkerP${i}S${j}`);
-                x = (squad.pos.x - cameraOnMapPos.x);
-                y = (squad.pos.y - cameraOnMapPos.y);
-                if (x >= 0 && x <= camera.mapRenderSize.x && y >= 0 && y <= camera.mapRenderSize.y) {
-                    squad.isRendered = true;
-                    // Screen position of squad is dependend on zoom
-                    ele.style.left = (factor * x - squadMarkerSize) + "px";
-                    ele.style.top = (factor * y - squadMarkerSize) + "px";
-                } else {
-                    if (squad.isRendered) {
-                        ele.style.left = "-100px";
-                        ele.style.top = "-100px";
-                    }
-                }
+            updateSquadMarker(i, j);
+        }
+    }
+}
+
+/** Updates one single squad marker */
+function updateSquadMarker(platoonID: number, squadID: number) {
+    let x = 0; let y = 0;
+    let squad: Squad;
+    let cameraOnMapPos: Coord = camera.getCurrentPositionOnMap();
+    let ele: HTMLElement;
+    let factor = camera.invZoomFactor;
+
+    squad = data.getSquad(platoonID, squadID);
+    if (!squad.isEmpty) {
+        ele = document.getElementById(`MarkerP${platoonID}S${squadID}`);
+        x = (squad.pos.x - cameraOnMapPos.x);
+        y = (squad.pos.y - cameraOnMapPos.y);
+        // If Squad marker is on screen
+        if (x >= 0 && x <= camera.mapRenderSize.x && y >= 0 && y <= camera.mapRenderSize.y) {
+            squad.isRendered = true;
+            // Screen position of squad is dependend on zoom
+            ele.style.left = (factor * x - squadMarkerSize) + "px";
+            ele.style.top = (factor * y - squadMarkerSize) + "px";
+            // If Squad marker should blink
+            document.getElementById(`squadMarkerAnimationP${platoonID}S${squadID}`).style.display = squad.isInPosition ? "none" : "block";
+        } else {
+            if (squad.isRendered) {
+                ele.style.left = "-100px";
+                ele.style.top = "-100px";
             }
         }
     }
 }
 
-export {reRenderMapBody, updateSquadMarkerPositions}
+export { reRenderMapBody, updateSquadMarkerPositions, updateSquadMarker }

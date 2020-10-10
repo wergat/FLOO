@@ -4,7 +4,7 @@ import camera from "./camera";
 import { handleRendererMouseEvent } from "./mouseEventHandler";
 import { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement } from "./classes";
 import data from "./data";
-import { addPlatoon, makeSquadMarkerDragAble, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
+import { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
 import { extendPlatoonList, OpenedPlatoonBox, reRenderLeftBox } from "./UIRendering";
 import * as UI from "./UI";
 import * as mapRendering from "./mapRendering";
@@ -18,46 +18,6 @@ const { ipcRenderer, remote } = require('electron');
 /** Window object */
 let electronWindow: Electron.BrowserWindow = remote.getCurrentWindow();
 
-
-
-
-
-
-/** We are updating the map when dragging only FPS/s often, so we safe if we dragged the map since last rendered frame */
-let didDragMap = false;
-
-
-
-
-
-
-
-
-
-/** Handles a simple click on a squad
- * onclick, a squad should start flickering or similar, signaling that it has not arrived at its location yet
- * another cllick should update a squad, singaling arrival 
- */
-function handleSquadClick(elementStrID: string) {
-    let ele = document.getElementById(elementStrID) as PlatoonHTMLElement;
-    let i = ele.platoon; let j = ele.squad;
-    //let inPosition = !Platoons[i].squads[j].isInPosition;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Fill the camera with information
 // Update Camera ScreenSize and Window Size
 camera.setMapRenderSize(electronWindow.getSize()[0], electronWindow.getSize()[1]);
@@ -66,9 +26,6 @@ camera.setScreenSpaceCorners(data.resolutionData[0].mapBoundingBox);
 console.log(data.resolutionData);
 camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
 console.log(camera.mapSpaceCorners);
-
-
-
 
 ipcRenderer.on('MouseEvent', (event, message) => {
     handleRendererMouseEvent(message);

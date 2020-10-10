@@ -1,26 +1,25 @@
 body {
-    display:flex;
-    align-items: center;
-    justify-content: center;
-
-    font-family: 'Open Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Open Sans', sans-serif;
 }
 
 #leftBox {
-    background-color: blueviolet;
-    width: 400px;
-    height: 500px;
-    top: 100px;
-    left: 0px;
-    position: absolute;
-    font-size: 140%;
+  background-color: blueviolet;
+  width: 400px;
+  height: 500px;
+  top: 100px;
+  left: 0px;
+  position: absolute;
+  font-size: 140%;
 }
 
 .platoonListEntry {
   height: 72px;
   text-align: left;
   display: inline-flex;
-  box-shadow: inset 0px -20px 20px 0px rgba(0,0,0,0.2), inset 0px 5px 10px 0px rgba(255,255,255,0.2);
+  box-shadow: inset 0px -20px 20px 0px rgba(0, 0, 0, 0.2), inset 0px 5px 10px 0px rgba(255, 255, 255, 0.2);
   transition-property: height;
   transition-duration: 0.1s;
 }
@@ -34,9 +33,7 @@ body {
   vertical-align: middle;
 }
 
-.squadList {
-  
-}
+.squadList {}
 
 .squadList div {
   display: inline-block;
@@ -61,7 +58,7 @@ body {
 
 .squadListEntryLetter a {
   text-transform: uppercase;
-  color: rgba(1,1,1,0.5);
+  color: rgba(1, 1, 1, 0.5);
   font-size: 190%;
   display: block !important;
   height: 1px;
@@ -72,92 +69,120 @@ body {
 }
 
 .squadMarker {
-    height: 10px;
-    width: 10px;
-    border-radius: 20px;
-    border: 2px solid black;
-    padding: 10px;
-    font-size: 190%;
-    text-transform: uppercase;
-    cursor: pointer;
-
-    position: fixed;
-    color: #DDD;
-    
-    text-align: justify;
-
-    text-decoration: none;
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-color: #444;
+  height: 10px;
+  width: 10px;
+  border-radius: 20px;
+  border: 2px solid black;
+  padding: 10px;
+  font-size: 190%;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: fixed;
+  color: #DDD;
+  text-align: justify;
+  text-decoration: none;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #444;
 }
 
-.squadMarkerLetter{
-    position: relative;
-    top: -12px;
+.squadMarkerLetter {
+  position: relative;
+  top: -12px;
 }
 
-.squadMarkerLettera { left: -6px; }
-.squadMarkerLetterb { left: -5px; }
-.squadMarkerLetterc { left: -7px; }
-.squadMarkerLetterd { left: -5px; }
+.squadMarkerLettera {
+  left: -6px;
+}
+
+.squadMarkerLetterb {
+  left: -5px;
+}
+
+.squadMarkerLetterc {
+  left: -7px;
+}
+
+.squadMarkerLetterd {
+  left: -5px;
+}
 
 #MapBoundsBox {
   border: 5px solid black;
   position: fixed;
 }
 
-
-#addPlatoon {display: inline-block; float:left;}
-
-#addPlatoonButton { background-color: #333; }
-#addPlatoonButton :hover { background-color: #888; }
-#addPlatoonButton :active { background-color: #AAA; }
-
-#debugDisplay {
-    top:0px;
-    right:0px;
-    position: absolute;
-    width: 200px;
-    height: 40px;
-    text-align: center;
-    font-size: 40px;
+#addPlatoon {
+  display: inline-block;
+  float: left;
 }
 
- /* Dropdown Button */
- .leftBoxButton {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    width: 200px;
-    height: 60px;
-  }
-  
-  /* The container <div> - needed to position the dropdown content */
-  .dropdownContinent {
-    position: relative;
-    display: inline-block;
-  }
-  
-  /* Dropdown Content (Hidden by Default) */
-  .dropdownContinent-content {
-    display: none;
-    position: absolute;
-    left: 200px;
-    top: 0px;
-    background-color: #f1f1f1;
-    box-shadow: 0px 8px 12px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-  }
-  
-  /* Show the dropdown menu on hover */
-  .dropdownContinent:hover .dropdownContinent-content {display: block;}
-  
-  /* Change the background color of the dropdown button when the dropdown content is shown */
-  .dropdownContinent:hover .leftBoxButton {background-color: #3e8e41;} 
+#addPlatoonButton {
+  background-color: #333;
+}
+
+#addPlatoonButton :hover {
+  background-color: #888;
+}
+
+#addPlatoonButton :active {
+  background-color: #AAA;
+}
+
+#debugDisplay {
+  top: 0px;
+  right: 0px;
+  position: absolute;
+  width: 200px;
+  height: 40px;
+  text-align: center;
+  font-size: 40px;
+}
+
+/* Dropdown Button */
+
+.leftBoxButton {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  width: 200px;
+  height: 60px;
+}
 
 /* The container <div> - needed to position the dropdown content */
+
+.dropdownContinent {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+
+.dropdownContinent-content {
+  display: none;
+  position: absolute;
+  left: 200px;
+  top: 0px;
+  background-color: #f1f1f1;
+  box-shadow: 0px 8px 12px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Show the dropdown menu on hover */
+
+.dropdownContinent:hover .dropdownContinent-content {
+  display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+
+.dropdownContinent:hover .leftBoxButton {
+  background-color: #3e8e41;
+}
+
+/* The container <div> - needed to position the dropdown content */
+
 .dropdownWarpgate {
   position: relative;
   display: inline-block;
@@ -173,6 +198,7 @@ body {
 }
 
 /* Dropdown Content (Hidden by Default) */
+
 .dropdownWarpgate-content {
   display: none;
   position: absolute;
@@ -180,13 +206,14 @@ body {
   top: 0px;
   background-color: #f1f1f1;
   min-width: 160px;
-  box-shadow: 0px 8px 12px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 12px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
   overflow: hidden;
   white-space: nowrap;
 }
 
 /* Links inside the dropdown */
+
 .dropdownWarpgate-content a {
   color: black;
   font-size: 16px;
@@ -196,10 +223,16 @@ body {
 }
 
 /* Change color of dropdown links on hover */
-.dropdownWarpgate-content a:hover {background-color: #ddd;}
+
+.dropdownWarpgate-content a:hover {
+  background-color: #ddd;
+}
 
 /* Show the dropdown menu on hover */
-.dropdownWarpgate:hover .dropdownWarpgate-content {display: block;}
+
+.dropdownWarpgate:hover .dropdownWarpgate-content {
+  display: block;
+}
 
 #contextMenu {
   position: fixed;
@@ -210,7 +243,7 @@ body {
   display: block;
   background-color: #f1f1f1;
   min-width: 160px;
-  box-shadow: 0px 8px 12px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 12px 0px rgba(0, 0, 0, 0.2);
   background-color: #f1f1f1;
   transition-property: height;
   transition-duration: 0.05s;
@@ -224,7 +257,6 @@ body {
   border: none;
   width: 200px;
 }
-
 
 .arrow {
   border: solid black;
@@ -241,4 +273,38 @@ body {
 .down {
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
+}
+
+/* The animation code */
+
+@keyframes squadMarkerAnimation {
+  from {
+    opacity: 0;
+    width: 68px;
+    height: 68px;
+    top: -64px;
+    left: -29px;
+  }
+  to {
+    opacity: 0.6;
+    width: 34px;
+    height: 34px;
+    top: -47px;
+    left: -12px;
+  }
+}
+
+.squadMarkerAnimationDiv {
+  width: 68px;
+  height: 68px;
+  animation-name: squadMarkerAnimation;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.4, 1, 0.6, 0);
+  position: relative;
+  top: -64px;
+  left: -29px;
+  background-color: inherit;
+  border-radius: 40px;
+  z-index: -1;
 }

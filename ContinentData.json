@@ -7,7 +7,7 @@
         "warpgates" : [
             {"name" : "Northern Warpgate", "x" : 12090, "y" : 3280, "id" : 0},
             {"name" : "Western Warpgate", "x" : 4010,"y" : 18280, "id" : 1},
-            {"name" : "*Eastern Warpgate", "x" : 18000,"y" : 18000, "id" : 2}
+            {"name" : "*Eastern Warpgate", "x" : 18080,"y" : 19150, "id" : 2}
         ]
     },
     {
