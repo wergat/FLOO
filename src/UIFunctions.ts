@@ -1,4 +1,4 @@
-import { Platoon, Squad, PlatoonHTMLElement, Coord } from "./classes"
+import { platoon, squad, platoonHTMLElement, coord } from "./classes"
 import data from "./data";
 import camera from "./camera";
 import * as mapRendering from "./mapRendering";
@@ -19,6 +19,8 @@ let FOCUS = true;
 /** Debug mode on/off? */
 let DEBUG = false;
 
+
+
 /** Adds one platoon of filled squads near the warpgate. Rerenders everything afterwards */
 function addPlatoon() {
     let platoonNumber = data.getPlatoonCount();
@@ -30,24 +32,24 @@ function addPlatoon() {
         ptColor = color.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255);
     }
 
-    let pt = new Platoon(ptColor);
+    let pt = new platoon(ptColor);
     // Add 4 empty squads first to push the platoon into the list
-    pt.squads = [new Squad(platoonNumber, "a", { x: 0, y: 0 }), new Squad(platoonNumber, "b", { x: 0, y: 0 }), new Squad(platoonNumber, "c", { x: 0, y: 0 }), new Squad(platoonNumber, "d", { x: 0, y: 0 })];
+    pt.squads = [new squad(platoonNumber, "a", { x: 0, y: 0 }), new squad(platoonNumber, "b", { x: 0, y: 0 }), new squad(platoonNumber, "c", { x: 0, y: 0 }), new squad(platoonNumber, "d", { x: 0, y: 0 })];
     data.platoons.push(pt);
 
     // Now fill the squads and spawn them near the warpgate one after another so they dont intersect
     // Fill one squad at a time so the squads dont overlap
-    let pos: Coord; let squad: Squad;
+    let pos: coord; let newSquad: squad;
     for (var i = 0; i < 4; i++) {
         // Get current squad data 
-        squad = data.getSquad(platoonNumber, i);
+        newSquad = data.getSquad(platoonNumber, i);
         // Get Free Position near warpgate
         pos = data.getFreePositionNearWarpgate();
         // Update squad status and position
-        squad.isEmpty = false;
-        squad.pos = pos;
+        newSquad.isEmpty = false;
+        newSquad.pos = pos;
         // save squad data
-        data.setSquad(platoonNumber, i, squad)
+        data.setSquad(platoonNumber, i, newSquad)
     }
 
     UIRendering.reRenderPlatoonBox();
@@ -96,6 +98,8 @@ function setWindowsFocus(isFocus: boolean) {
         document.getElementById("debugDisplay").innerText = "Unfocused";
     }
 }
+
+
 
 
 export { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus, setMapAsDragged, FOCUS }

@@ -1,4 +1,4 @@
-import { Coord, PlatoonHTMLElement, Squad } from "./classes"
+import { coord, platoonHTMLElement, squad } from "./classes"
 import camera from "./camera";
 import * as UI from "./UI";
 import * as UIRendering from "./UIRendering";
@@ -15,18 +15,20 @@ let squadMarkerSize = 17;
 let canDragMap: boolean;
 
 /** Screenspace position of dragging mouse last event */
-let lastDragPosition: Coord = { x: 0, y: 0 };
+let lastDragPosition: coord = { x: 0, y: 0 };
 /** So we know where the MAPSPACE camera pos is compared to dragStartPosition */
-let relativeCamPositionToDragStart: Coord = { x: 0, y: 0 };
+let relativeCamPositionToDragStart: coord = { x: 0, y: 0 };
 
 /** Mouse position on map space when map drag starts */
-let dragStartPosition: Coord = { x: 0, y: 0 };
+let dragStartPosition: coord = { x: 0, y: 0 };
 /** Total screenspace mouse drag movement, reset on mouseup */
-let dragMovement: Coord = { x: 0, y: 0 };
+let dragMovement: coord = { x: 0, y: 0 };
 
 /** TODO: ??? */
 let mousePos = { x: 0, y: 0 };
 
+/** [PlatoonID,SquadID] of squadmarker for context menu */
+let contextMenuSelected: [number, number] = [-1, -1];
 
 let contextMenuOpen = false;
 
@@ -59,13 +61,13 @@ function handleRendererMouseEvent(message: any) {
                 // If we are hovering over the map and are not dragging something around right now, drag the map if we drag the mouse around TODO: Add actual area for map to be checked against, so you dont drag stuff from offscreen
                 if (FOCUS == false) {
                     canDragMap = true;
+                    // Close the context menu if it is open right now
+                    if (contextMenuOpen) {
+                        closeContextMenu()
+                    }
                 }
 
-                // Close the context menu if it is open right now
-                if (contextMenuOpen) {
-                    contextMenuOpen = false;
-                    UIRendering.closeContextWindow();
-                }
+
             }
             console.log(message.activeWindow);
             updateMouseDebugBox(message);
@@ -84,7 +86,7 @@ function handleRendererMouseEvent(message: any) {
 }
 
 /** Handles the map and camera positions when the camera gets dragged around */
-function handleMapDrag(newPos: Coord) {
+function handleMapDrag(newPos: coord) {
     // Dont trag if we can't drag
     if (!canDragMap) { return; }
 
@@ -127,7 +129,7 @@ function handleMouseWheel(message: any) {
 
 
 /** Makes an element (squadmarker) dragable by adding mouse events to the squad marker*/
-function makeSquadMarkerDragAble(squadMarker: PlatoonHTMLElement) {
+function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
     let deltaMove = { x: 0, y: 0 };
     let lastPos = { x: 0, y: 0 };
     let startPos = { x: 0, y: 0 }
@@ -149,6 +151,12 @@ function makeSquadMarkerDragAble(squadMarker: PlatoonHTMLElement) {
 
         // Lets start dragging this element, not the map.
         isDraggingThisElement = true;
+
+        // Close context menu if it is open
+        if (contextMenuOpen) {
+            closeContextMenu()
+
+        }
     }
 
     function elementDrag(e: MouseEvent) {
@@ -180,11 +188,9 @@ function makeSquadMarkerDragAble(squadMarker: PlatoonHTMLElement) {
         // Check if we dragged it all. If we didnt drag, then it was a click instead, so handle the event as a click instead
         if (lastPos.x - startPos.x == 0 && lastPos.y - startPos.y == 0) {
             handleSquadMarkerClick(event);
-        }else{
-            // Do nothing if shift is pressed
-            if(!event.shiftKey){ // If shift is not pressed, the squad is on the way
-                handleSquadMarkerClick(event, false, false);
-            }
+        } else {
+            // If shift is pressed, set the squad marker to inPosiion, otherwise auto-set it to not in position
+            handleSquadMarkerClick(event, false, event.shiftKey);
         }
     }
 }
@@ -200,18 +206,24 @@ function handleSquadMarkerEvent(event: MouseEvent) {
         case 2: // Right click/ context menu
             contextMenuOpen = true;
             UIRendering.openSquadContextWindow(event);
+            setContextMenuSelected(event);
             break;
         default: break;
     }
 }
 
 
-/** Left click on squad marker to indicate squad is moving to that position */
+/**
+ * Left click on squad marker to indicate squad is moving to that position
+ * @param event Event that got triggered, used to get click target
+ * @param toggle Toggle the inPosition value? Value gets set if this is false
+ * @param value Sets inPosiion to value if toggle=false
+ */
 function handleSquadMarkerClick(event: MouseEvent, toggle = true, value = true) {
     // Get pID and sID of element we clicked on
-    let [platoonID, squadID] = data.getPlatoonAndSquadOfMarkerElement(event.target as PlatoonHTMLElement);
+    let [platoonID, squadID] = data.getPlatoonAndSquadOfMarkerElement(event.target as platoonHTMLElement);
     // Get the squad data
-    let squad: Squad = data.getSquad(platoonID, squadID);
+    let squad: squad = data.getSquad(platoonID, squadID);
     // Set and save data
     if (toggle) {
         squad.isInPosition = !squad.isInPosition;
@@ -219,8 +231,71 @@ function handleSquadMarkerClick(event: MouseEvent, toggle = true, value = true) 
         squad.isInPosition = value;
     }
     data.setSquad(platoonID, squadID, squad);
-    // Update rendering for this squad marker only
-    mapRendering.updateSquadMarker(platoonID, squadID);
+    // Update the animation toggle for this squad only
+    mapRendering.updateSquadMarkerAnimation(platoonID, squadID);
 }
+
+
+/** Gets an event for a click on a squad marker, saves the squad that was clicked on for later use */
+function setContextMenuSelected(e: MouseEvent) {
+    contextMenuSelected = data.getPlatoonAndSquadOfMarkerElement(e.target as platoonHTMLElement);
+}
+
+/** closes the context menu */
+function closeContextMenu() {
+    // Context menu not clicked on a menu anymore
+    contextMenuSelected = [-1, -1];
+    // Also not opened anymore
+    contextMenuOpen = false;
+    // Stop showing up as opened, please
+    UIRendering.closeContextWindow();
+}
+
+/** Deletes the squad the current context menu was opened on
+ * TODO: Maybe move this to UIFunctions?
+ */
+function deleteSquadWithDropdown() {
+    let pID = contextMenuSelected[0];
+    let sID = contextMenuSelected[1];
+    // Only delete a squad if we have clicked on a valid squad
+    if (pID >= 0 && sID >= 0) {
+        let squadToDelete = data.getSquad(pID, sID);
+        squadToDelete.isEmpty = true;
+        data.setSquad(pID, sID, squadToDelete);
+        mapRendering.updateSquadMarker(pID, sID, true);
+    }
+}
+
+/** Sends the squad with the context menu to the warpgate */
+function sendSquadToWarpgate() {
+    // Get some clear position near the warpgate
+    let pos = data.getFreePositionNearWarpgate();
+    let pID = contextMenuSelected[0];
+    let sID = contextMenuSelected[1];
+    let squadToMove = data.getSquad(pID, sID);
+    // Move the squad there
+    squadToMove.pos = pos;
+    // Apply changes
+    data.setSquad(pID, sID, squadToMove);
+    // We have move a squad, we need to re-render it
+    mapRendering.updateSquadMarker(pID, sID);
+}
+
+
+
+/** The Menu buttons get created only once at start, so no need to add the listeners more than once either */
+function setDropdownMenuButtons() {
+    document.getElementById("sendToWarpgateButton").addEventListener('click', () => {
+        sendSquadToWarpgate();
+        closeContextMenu();
+    });
+
+    document.getElementById("deleteSquadButton").addEventListener('click', () => {
+        deleteSquadWithDropdown();
+        closeContextMenu();
+    });
+}
+
+setDropdownMenuButtons();
 
 export { handleRendererMouseEvent, makeSquadMarkerDragAble, handleSquadMarkerEvent, mousePos, dragMovement, dragStartPosition }

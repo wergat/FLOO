@@ -1,24 +1,38 @@
 import * as color from 'color';
 
-interface Coord { x: number; y: number; };
+interface coord { x: number; y: number; };
 
-interface Rect {
+interface rect {
     topLeft: { x: number, y: number },
     bottomRight: { x: number, y: number }
 }
 
-interface PlatoonHTMLElement extends HTMLElement {
+interface platoonHTMLElement extends HTMLElement {
     platoon: number; squad: number;
 }
 
-class Platoon {
-    squads: Squad[];
+/**
+ * Enum to set a squad to a specific type
+ * like armor squad, air squad
+ */
+enum squadType {
+    none,
+    armor,
+    air,
+    bastion
+}
+
+
+class platoon {
+    squads: squad[];
     color: color;
-    borderColor: color;
+    darkerColor: color;
+    brigtherColor: color;
 
     SetColor(tColor: color) {
         this.color = tColor;
-        this.borderColor = tColor.darken(0.5);
+        this.darkerColor = tColor.darken(0.5);
+        this.brigtherColor = tColor.lighten(0.5);
     }
     constructor(color: color) {
         this.SetColor(color);
@@ -27,18 +41,27 @@ class Platoon {
     }
 }
 
-class Squad {
-    platoonNumber: Number;
-    squadLetter: String;
+class squad {
+    /** Number/ID of platoon this squad is a part of */
+    platoonNumber: number;
+    /** Letter of squad A-D for alpha - delta */
+    squadLetter: string;
+    /** Is the squad in the camera area? */
     isRendered: boolean;
+    /** Currently in position? If not, it shows that it is not in position. */
     isInPosition: boolean;
-    name: String;
-    pos: Coord;
+    /** Name of Outfit that is related to this squad */
+    name: string;
+    /** Position of this map in MapSpace */
+    pos: coord;
+    /** Is this squad empty? (~Deleted) */
     isEmpty: boolean;
+    /** Marker for the squad */
+    marker: squadType;
 
     static validLetters = ["a", "b", "c", "d"];
-    constructor(platoonNumber: number, squadLetter: string, _pos: Coord) {
-        if (!Squad.validLetters.includes(squadLetter)) { console.error("Unknown squad letter", squadLetter); }
+    constructor(platoonNumber: number, squadLetter: string, _pos: coord) {
+        if (!squad.validLetters.includes(squadLetter)) { console.error("Unknown squad letter", squadLetter); }
         if (platoonNumber < 0) { console.error("Platoon number must be larger than 0", platoonNumber); }
 
         this.platoonNumber = platoonNumber;
@@ -52,23 +75,23 @@ class Squad {
     }
 }
 
-interface Warpgate {
+interface warpgate {
     name: string;
     x: number;
     y: number;
 }
 
-interface Continent {
+interface continent {
     name: string;
-    mapBoxSize: Coord;
+    mapBoxSize: coord;
     UIColor: { primary: string, secondary: string };
-    warpgates: Warpgate[];
+    warpgates: warpgate[];
 }
 
-interface ResolutionSettings {
+interface resolutionSettings {
     resolution: string;
-    mapBoundingBox: Rect;
+    mapBoundingBox: rect;
 }
 
 
-export { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement }
+export { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement }

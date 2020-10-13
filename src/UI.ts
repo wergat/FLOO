@@ -3,10 +3,6 @@ import * as UIRendering from "./UIRendering"
 /** Update the mouse box only every x ms  */
 let DEBUGDidUpdateMouseBox = false;
 
-/** Is the custom context menu open right now */
-let contextMenuOpen: boolean = false;
-
-
 function updateZoomLevel() {
     // TODO: Update Zoom Displayed on UI
 }

@@ -1,4 +1,4 @@
-import { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement } from "./classes";
+import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement } from "./classes";
 import * as color from 'color';
 const Store = require('electron-store');
 
@@ -11,8 +11,8 @@ const platoonStore = new Store({ name: 'platoons' });
 /** IDK if there is a way to properly import this, so instead i just hardcoded it 
      * imports and returns continent data
     */
-function importContinentData(data: any): Continent[] {
-    let continentArray: Continent[] = [];
+function importContinentData(data: any): continent[] {
+    let continentArray: continent[] = [];
     for (let i = 0; i < data.length; i++) {
         continentArray[i] = {
             name: data[i].name as string,
@@ -31,8 +31,8 @@ function importContinentData(data: any): Continent[] {
 /** IDK if there is a way to properly import this, so instead i just hardcoded it
  * imports and returns continent data
  */
-function importResolutionSettings(data: any): ResolutionSettings[] {
-    let resolutionData: ResolutionSettings[] = [];
+function importResolutionSettings(data: any): resolutionSettings[] {
+    let resolutionData: resolutionSettings[] = [];
     for (let i = 0; i < data.length; i++) {
         resolutionData[i] = {
             resolution: data[i].resolution as string,
@@ -48,12 +48,12 @@ function importResolutionSettings(data: any): ResolutionSettings[] {
 
 class Data {
     /** Data about the continents */
-    continentData: Continent[] = importContinentData(require("../ContinentData.json"));
+    continentData: continent[] = importContinentData(require("../ContinentData.json"));
     /** Data for varios UI scaling etc when choosing different resolutions */
-    resolutionData: ResolutionSettings[] = importResolutionSettings(require("../resolutionSettings.json"));
+    resolutionData: resolutionSettings[] = importResolutionSettings(require("../resolutionSettings.json"));
 
     /** All the data about the platoons and squads */
-    platoons: Platoon[] = [];
+    platoons: platoon[] = [];
     /** 0 = "2560x1377" */
     resolutionSelected: number = 0;
     /** ID of continent selected */
@@ -84,13 +84,13 @@ class Data {
      * @param {number} p platoon ID 
      * @param {number} s ID of squad in platoon p
     */
-    getSquad(p: number, s: number): Squad {
+    getSquad(p: number, s: number): squad {
         if (s < 0 || s > 4) { throw new Error("Squad Index out of bounds."); }
         return this.getPlatoon(p).squads[s];
     }
 
     /** Returns platoon with id i */
-    getPlatoon(i: number): Platoon {
+    getPlatoon(i: number): platoon {
         if (i < 0 || i >= this.platoons.length) { throw new Error("Platoon Index out of bounds."); }
         return this.platoons[i];
     }
@@ -101,19 +101,19 @@ class Data {
     }
 
     /** Returns the currently selected continent as object */
-    getCurrentContinent(): Continent {
+    getCurrentContinent(): continent {
         return this.continentData[this.continentSelectedID];
     }
 
     /** Returns the currently selected warpgate as object*/
-    getCurrentWarpgate(): Warpgate {
+    getCurrentWarpgate(): warpgate {
         return this.getCurrentContinent().warpgates[this.warpgateSelectedID];
     }
 
     /** Returns a random position near the warpgate that is not near any other squad marker right now */
-    getFreePositionNearWarpgate() : Coord {
+    getFreePositionNearWarpgate() : coord {
         let WGData = this.getCurrentWarpgate();
-        let WGPos : Coord = { x: WGData.x, y: WGData.y } ;
+        let WGPos : coord = { x: WGData.x, y: WGData.y } ;
         // Range of wich no other squad is allowed to be
         const FreeRadius = 150;
         let range = 5;
@@ -145,13 +145,13 @@ class Data {
     }
 
     /** Saves platoon data of a platoon with platoon id. Also writes data to disk */
-    setPlatoon(platoonID: number, platoon: Platoon) {
+    setPlatoon(platoonID: number, platoon: platoon) {
         this.platoons[platoonID] = platoon;
         platoonStore.store = this.platoons;
     }
 
     /** Saves squad data of a squad with platoon id and squad id. Also writes data to disk */
-    setSquad(platoonID: number, squadID: number, squad: Squad) {
+    setSquad(platoonID: number, squadID: number, squad: squad) {
         this.platoons[platoonID].squads[squadID] = squad;
         platoonStore.store = this.platoons;
     }
@@ -161,14 +161,14 @@ class Data {
      * @argument ele Squad Marker element or child of squad marker element as PlatoonHTMLElement
      * @returns touple of [platoonID, squadID] as [number,number]
      */
-    getPlatoonAndSquadOfMarkerElement(ele: PlatoonHTMLElement): [number, number] {
+    getPlatoonAndSquadOfMarkerElement(ele: platoonHTMLElement): [number, number] {
         // In case a child element got put in
         while (!ele.classList.contains("squadMarker")) {
             // IDK how this would happen, but saftey first
             if (ele.parentElement == null) {
                 throw new Error("Element not squad marker or child of squad marker");
             }
-            ele = ele.parentElement as PlatoonHTMLElement;
+            ele = ele.parentElement as platoonHTMLElement;
         }
         return [ele.platoon, ele.squad];
     }

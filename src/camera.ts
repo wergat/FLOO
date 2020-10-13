@@ -1,10 +1,10 @@
-import { Coord, Rect } from "./classes"
+import { coord, rect } from "./classes"
 import data from "./data";
 
 class Camera {
     //   Constants
     /** Top Left Corner of Camera */
-    onMapPos: Coord = { x: 0, y: 0 };
+    onMapPos: coord = { x: 0, y: 0 };
     /** Current Zoom Level of Map */
     currentZoomLevel = 0;
     /** Zoom level resrictions */
@@ -25,18 +25,18 @@ class Camera {
     invZoomFactor = 1;
 
     /** Size Of Map Rendered */
-    mapRenderSize: Coord = { x: 0, y: 0 };
+    mapRenderSize: coord = { x: 0, y: 0 };
     /** Size of window */
-    windowSize: Coord = { x: 0, y: 0 };
+    windowSize: coord = { x: 0, y: 0 };
 
     /** = getResolutionBoundingBox() : Bounding box for ingame map in screen space, assuming topLeft = (0|0)*/
-    screenSpaceCorners: Rect;
+    screenSpaceCorners: rect;
     /** Size of the currently selected continent */
-    continentSize: Coord;
+    continentSize: coord;
     /** screenSpaceCorners based on mapspace instead of screenspace + current camera position*/
-    mapSpaceCorners: Rect;
+    mapSpaceCorners: rect;
 
-    getCurrentPositionOnMap(): Coord {
+    getCurrentPositionOnMap(): coord {
         return this.onMapPos;
     }
 
@@ -58,7 +58,7 @@ class Camera {
 
     /** Does not clamp the camera position */
     setCamerPosition(_x: number, _y: number): void;
-    setCamerPosition(_x: Coord, _y: void): void;
+    setCamerPosition(_x: coord, _y: void): void;
     setCamerPosition(_x: any, _y: any) {
         if (_y == null) {
             this.onMapPos = _x;
@@ -67,7 +67,7 @@ class Camera {
         }
     }
 
-    setScreenSpaceCorners(_screenSpaceCorners: Rect) {
+    setScreenSpaceCorners(_screenSpaceCorners: rect) {
         this.screenSpaceCorners = _screenSpaceCorners;
         this.recalculateMapSpaceCorners();
     }

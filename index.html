@@ -1,7 +1,8 @@
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='; script-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='; script-src 'self' 'sha256-J/X3c9kqPjXkiBCmfuH8Dt0Ppgj3yI9Itmm1m42Y97E='">
   <link rel="stylesheet" href="./style.css">
   <title>Force Lead Operation Overlay</title>
 </head>
@@ -24,9 +25,15 @@
     </div>
     <div id="MousePosBox"></div>
   </div>
-  <div id="contextMenu">
-    <button class="contextMenuButton">Remove Platoon</button>
-    <button class="contextMenuButton">Move to WG</button>
+  <div id="contextMenu" class="clickable">
+    <div class="tooltip">
+      <img src="img/backToWarpgate.png" class="tooltip" id="sendToWarpgateButton">
+      <span class="tooltiptext">Send squad back to warpgate</span>
+    </div>
+    <div class="tooltip">
+      <img src="img/delete.png" id="deleteSquadButton">
+      <span class="tooltiptext">Delete Squad</span>
+    </div>
   </div>
 
   <!-- Top Right Corner Debug Display for Focus/Not Focus-->

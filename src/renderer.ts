@@ -2,7 +2,7 @@
 import * as color from 'color';
 import camera from "./camera";
 import { handleRendererMouseEvent } from "./mouseEventHandler";
-import { Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings, PlatoonHTMLElement } from "./classes";
+import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement } from "./classes";
 import data from "./data";
 import { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
 import { extendPlatoonList, OpenedPlatoonBox, reRenderLeftBox } from "./UIRendering";
@@ -27,10 +27,15 @@ console.log(data.resolutionData);
 camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
 console.log(camera.mapSpaceCorners);
 
+let update = mapRendering.updateCirclePosition;
+
 ipcRenderer.on('MouseEvent', (event, message) => {
     handleRendererMouseEvent(message);
 });
 
+ipcRenderer.on('KeyEvent', (event, message) => {
+    handleRendererKeyEvent(message);
+});
 // Set framrate for drag updates to 60FPS for better performance when dragging stuff around
 window.setInterval(function () {
     updateMapIfDragged();
@@ -47,6 +52,9 @@ document.getElementById("addPlatoonButton").onclick = function () {
     }
 }
 
+function handleRendererKeyEvent(message : any){
+    //console.log(message);
+}
 
 // Clearing the cache (TODO: why again?)
 electronWindow.webContents.session.clearCache();

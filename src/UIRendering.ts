@@ -1,4 +1,4 @@
-import { Squad, PlatoonHTMLElement } from "./classes"
+import { squad, platoonHTMLElement } from "./classes"
 import { mousePos, dragMovement, dragStartPosition } from "./mouseEventHandler";
 import data from "./data";
 import camera from "./camera";
@@ -38,7 +38,7 @@ function reRenderPlatoonBox() {
         str += "<div id='platoon" + i + "' class='platoonListEntry'><div class='platoonListID' id='platoonListID" + i + "'>Platoon " + i + " <div><i class='arrow down' id='platoon" + i + "Arrow'></i></div> </div>" +
             "<div class='squadList'>";
         for (let j = 0; j < 4; j++) {
-            str += "<div class='squadListEntry' id='squadListEntryP" + i + "S" + j + "'><div class='squadListEntryLetter'><a>" + Squad.validLetters[j] +
+            str += "<div class='squadListEntry' id='squadListEntryP" + i + "S" + j + "'><div class='squadListEntryLetter'><a>" + squad.validLetters[j] +
                 "</a></div> <div class='squadListEntryName' contenteditable='true' id='squadListNameP" + i + "S" + j + "'>" + data.getSquad(i, j).name +
                 "</div></div>";
         }
@@ -135,11 +135,13 @@ function closeContextWindow() {
 function openSquadContextWindow(e: MouseEvent) {
     const relativePos = { x: 30, y: 0 };
     let menuEle = document.getElementById("contextMenu");
-    let [i,j] = data.getPlatoonAndSquadOfMarkerElement(e.target as PlatoonHTMLElement);
+    let [i,j] = data.getPlatoonAndSquadOfMarkerElement(e.target as platoonHTMLElement);
     
     menuEle.style.left = (camera.invZoomFactor * (data.getSquad(i, j).pos.x - camera.onMapPos.x) - squadMarkerSize + relativePos.x) + "px";
     menuEle.style.top = (camera.invZoomFactor * (data.getSquad(i, j).pos.y - camera.onMapPos.y) - squadMarkerSize + relativePos.y) + "px";
     menuEle.style.height = "200px";
+
+    
 }
 
 export { updateMouseDebugBoxHTML, closeContextWindow, openSquadContextWindow, extendPlatoonList, reRenderLeftBox, reRenderPlatoonBox, reRenderContinentSelectButtons, OpenedPlatoonBox }

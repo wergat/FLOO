@@ -38,11 +38,15 @@ function createWindow() {
 /** Focus changes on mouse down, usually, so we can check if the current window is planetside or not or something else */
 function handleMouseDown(event: any) {
   event.activeWindow = activeWin.sync();
-  eventHandler(event);
+  mouseEventHandler(event);
 }
 
-function eventHandler(event: any) {
+function mouseEventHandler(event: any) {
   winWebContents.send('MouseEvent', event);
+}
+
+function keyEventHandler(event: any) {
+  winWebContents.send('KeyEvent', event);
 }
 
 console.log("Starting...");
@@ -66,12 +70,12 @@ if (require('electron-squirrel-startup')) {
     // Hook into the mouse to observe outside of rendered areas
     ioHook.start(true);
     ioHook.on('mousedown', handleMouseDown);
-    ioHook.on('mouseup', eventHandler);
-    ioHook.on('mousewheel', eventHandler);
-    ioHook.on('mousemove', eventHandler);
-    ioHook.on('mousedrag', eventHandler);
-    ioHook.on('keydown', eventHandler);
-    ioHook.on('keyup', eventHandler);
+    ioHook.on('mouseup', mouseEventHandler);
+    ioHook.on('mousewheel', mouseEventHandler);
+    ioHook.on('mousemove', mouseEventHandler);
+    ioHook.on('mousedrag', mouseEventHandler);
+    ioHook.on('keydown', keyEventHandler);
+    ioHook.on('keyup', keyEventHandler);
   })
 
   app.on('before-quit', () => {
@@ -79,6 +83,6 @@ if (require('electron-squirrel-startup')) {
     ioHook.stop();
   });
 
-  
+
 
 }

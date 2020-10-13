@@ -7,18 +7,18 @@
         "warpgates" : [
             {"name" : "Northern Warpgate", "x" : 12090, "y" : 3280, "id" : 0},
             {"name" : "Western Warpgate", "x" : 4010,"y" : 18280, "id" : 1},
-            {"name" : "*Eastern Warpgate", "x" : 18080,"y" : 19150, "id" : 2}
+            {"name" : "Eastern Warpgate", "x" : 18080,"y" : 19150, "id" : 2}
         ]
     },
     {
-        "name" : "*Amerish",
+        "name" : "Amerish",
         "id" : 1,
         "mapBoxSize" : {"x": 23500, "y": 23500},
         "UIColor" : {"primary" : "#C2F5D9", "secondary" : "#3C516B"},
         "warpgates" : [
-            {"name" : "North Western Warpgate", "x" : 5410, "y" : 5850, "id" : 0},
-            {"name" : "Eastern Warpgate", "x" : 17840,"y" : 6280, "id" : 1},
-            {"name" : "Southern Warpgate", "x" : 6530,"y" : 18230, "id" : 2}
+            {"name" : "*Western Warpgate", "x" : 5410, "y" : 5850, "id" : 0},
+            {"name" : "Eastern Warpgate", "x" : 19600,"y" : 5100, "id" : 1},
+            {"name" : "*Southern Warpgate", "x" : 6530,"y" : 18230, "id" : 2}
         ]
     },
     {
