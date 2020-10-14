@@ -5,5 +5,11 @@
             "topLeft" : { "x" : 754, "y" : 185},
             "bottomRight" : { "x" : 1805, "y" : 1236}
         }
+    },{
+        "resolution" : "1920x1080",
+        "mapBoundingBox" : {
+            "topLeft" : { "x" : 571, "y" : 120},
+            "bottomRight" : { "x" : 1805, "y" : 1236}
+        }
     }
 ]

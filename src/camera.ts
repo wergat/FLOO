@@ -10,10 +10,13 @@ class Camera {
     /** Zoom level resrictions */
     level = { min: 0, max: 6, resetMin: 0, resetMax: 4 }
     /** Zoom level size factors */
-    factor = [1, 1.4, 2.1, 3.425, 6.235, 12.24, 18];
-    // First Calc: [1,1.4   ,2.1 ,3.415, 6.23, 12.15, 17.93];
-    // Second Calc: [1, 1.4, 2.1, 3.425, 6.235, 12.24, 18]
-    // Values 1-3 should be accurate.
+    // TODO: Investigate if X and Y screen scale at the same pace
+    factor =        [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18];
+
+    // First calc:  [1, 1.4,    2.1,    3.415,  6.23,   12.15,  17.93];
+    // Second calc: [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18];
+    // 1080p calc:  [1, 1.405,  2.105,  3.428,  6.226,  12.22,  18];
+    // Values 1-3 should be accurate OR ARE THEY.
 
     /** Current Zoom Factor
      *  mapRenderSize / windowSize = this.zoomFactor

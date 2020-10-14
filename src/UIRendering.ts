@@ -30,23 +30,69 @@ function updateMouseDebugBoxHTML() {
 }
 
 
+/**
+    Creates the dropdown part with the arrow of the platoon list
+ */
+function getPlatoonListElement(i: number): HTMLDivElement {
+    let platoonListElement = document.createElement("div");
+    platoonListElement.id = `platoonListID${i}`;
+    platoonListElement.classList.add("platoonListID");
+    platoonListElement.appendChild(document.createTextNode(`Platoon${i}`));
 
+    let ptArrowElement = document.createElement("div");
+    let ptIElement = document.createElement("i");
+    ptIElement.id = `platoon${i}Arrow`;
+    ptIElement.classList.add("arrow", "down");
+    ptArrowElement.appendChild(ptIElement);
+
+    platoonListElement.appendChild(ptArrowElement);
+
+    return platoonListElement;
+}
+
+/**
+    creates squad detail part of the platoon listv
+ */
+function getPlatoonListSquadList(i: number): HTMLDivElement {
+    let squadListElement = document.createElement("div");
+    squadListElement.classList.add("squadList");
+    for (let j = 0; j < 4; j++) {
+        let squadListEntryElement = document.createElement("div");
+        squadListEntryElement.id = `squadListEntryP${i}S${j}`;
+        squadListEntryElement.classList.add("squadListEntry");
+
+        let squadListEntryLetterElement = document.createElement("div");
+        squadListEntryLetterElement.classList.add("squadListEntryLetter");
+        let letterElement = document.createElement("a");
+        letterElement.appendChild(document.createTextNode(`${squad.validLetters[j]}`));
+        squadListEntryLetterElement.appendChild(letterElement);
+        squadListEntryElement.appendChild(squadListEntryLetterElement);
+
+        let squadListEntryNameElement = document.createElement("div");
+        squadListEntryNameElement.classList.add("squadListEntryName");
+        squadListEntryNameElement.id = `squadListNameP${i}S${j}`;
+        squadListEntryNameElement.contentEditable = "true";
+        squadListEntryNameElement.appendChild(document.createTextNode(data.getSquad(i, j).name));
+        squadListEntryElement.appendChild(squadListEntryNameElement);
+
+        squadListElement.appendChild(squadListEntryElement);
+    }
+    return squadListElement;
+}
 
 function reRenderPlatoonBox() {
     let str = "";
+    let platoonBoxElement = document.getElementById("PlatoonBox");
+    platoonBoxElement.innerHTML = "";
+
     for (let i = 0; i < data.getPlatoonCount(); i++) {
-        str += "<div id='platoon" + i + "' class='platoonListEntry'><div class='platoonListID' id='platoonListID" + i + "'>Platoon " + i + " <div><i class='arrow down' id='platoon" + i + "Arrow'></i></div> </div>" +
-            "<div class='squadList'>";
-        for (let j = 0; j < 4; j++) {
-            str += "<div class='squadListEntry' id='squadListEntryP" + i + "S" + j + "'><div class='squadListEntryLetter'><a>" + squad.validLetters[j] +
-                "</a></div> <div class='squadListEntryName' contenteditable='true' id='squadListNameP" + i + "S" + j + "'>" + data.getSquad(i, j).name +
-                "</div></div>";
-        }
-
-
-        str += "</div></div>";
+        let platoonListEntry = document.createElement("div");
+        platoonListEntry.id = `platoon${i}`;
+        platoonListEntry.classList.add("platoonListEntry");
+        platoonListEntry.appendChild(getPlatoonListElement(i));
+        platoonListEntry.appendChild(getPlatoonListSquadList(i));
+        platoonBoxElement.appendChild(platoonListEntry);
     }
-    document.getElementById("PlatoonBox").innerHTML = str;
 
     for (let i = 0; i < data.getPlatoonCount(); i++) {
         document.getElementById("platoon" + i).style.backgroundColor = data.getPlatoon(i).color.toString();
@@ -59,7 +105,6 @@ function reRenderPlatoonBox() {
         }
     }
 }
-
 
 /** Re-renders the continent select button */
 function reRenderContinentSelectButtons() {
@@ -135,13 +180,13 @@ function closeContextWindow() {
 function openSquadContextWindow(e: MouseEvent) {
     const relativePos = { x: 30, y: 0 };
     let menuEle = document.getElementById("contextMenu");
-    let [i,j] = data.getPlatoonAndSquadOfMarkerElement(e.target as platoonHTMLElement);
-    
+    let [i, j] = data.getPlatoonAndSquadOfMarkerElement(e.target as platoonHTMLElement);
+
     menuEle.style.left = (camera.invZoomFactor * (data.getSquad(i, j).pos.x - camera.onMapPos.x) - squadMarkerSize + relativePos.x) + "px";
     menuEle.style.top = (camera.invZoomFactor * (data.getSquad(i, j).pos.y - camera.onMapPos.y) - squadMarkerSize + relativePos.y) + "px";
     menuEle.style.height = "200px";
 
-    
+
 }
 
 export { updateMouseDebugBoxHTML, closeContextWindow, openSquadContextWindow, extendPlatoonList, reRenderLeftBox, reRenderPlatoonBox, reRenderContinentSelectButtons, OpenedPlatoonBox }
