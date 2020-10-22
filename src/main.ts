@@ -30,7 +30,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
   mainWindow.maximize();
   mainWindow.setIgnoreMouseEvents(IGNOREWINDOW, { forward: IGNOREWINDOW });
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
   winWebContents = mainWindow.webContents;
 
   console.log('Window Created');
