@@ -3,9 +3,8 @@ import camera from "./camera";
 import * as UI from "./UI";
 import * as UIRendering from "./UIRendering";
 import * as mapRendering from "./mapRendering";
-import { setMapAsDragged, FOCUS } from "./UIFunctions";
+import { setMapAsDragged, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS } from "./UIFunctions";
 import data from "./data";
-import { eventNames } from "iohook";
 
 
 /** (Half the) Size of the Squad marker in pixels */
@@ -37,6 +36,7 @@ let contextMenuOpen = false;
  * Used to track mouse when the game is focused instead of the UI tools
  */
 function handleRendererMouseEvent(message: any) {
+    if (!mapRendering.RENDER_MAP) { return; }
     var type = message.type;
     switch (type) {
         case 'mousedrag':
@@ -52,14 +52,15 @@ function handleRendererMouseEvent(message: any) {
         case 'mousedown':
             // Left Click
             if (message.button == 1) {
+                let cameraPos = camera.getCurrentPosition();
                 // Reset all drag coordinates and tracked vectors etc
                 dragStartPosition = { x: camera.zoomFactor * message.x, y: camera.zoomFactor * message.y };
-                relativeCamPositionToDragStart = { x: camera.onMapPos.x - dragStartPosition.x, y: camera.onMapPos.y - dragStartPosition.y };
+                relativeCamPositionToDragStart = { x: cameraPos.x - dragStartPosition.x, y: cameraPos.y - dragStartPosition.y };
                 lastDragPosition = { x: message.x, y: message.y };
                 dragMovement = { x: 0, y: 0 };
 
                 // If we are hovering over the map and are not dragging something around right now, drag the map if we drag the mouse around TODO: Add actual area for map to be checked against, so you dont drag stuff from offscreen
-                if (FOCUS == false) {
+                if (FOCUS.value == false) {
                     canDragMap = true;
                     // Close the context menu if it is open right now
                     if (contextMenuOpen) {
@@ -69,7 +70,7 @@ function handleRendererMouseEvent(message: any) {
 
 
             }
-            console.log(message.activeWindow);
+            //console.log(message.activeWindow);
             updateMouseDebugBox(message);
             break;
         case 'mousemove':
@@ -97,8 +98,11 @@ function handleMapDrag(newPos: coord) {
     // Summing the total distance moved from the start position
     dragMovement.x += dX; dragMovement.y += dY;
 
-    camera.onMapPos.x = dragStartPosition.x + dragMovement.x + relativeCamPositionToDragStart.x;
-    camera.onMapPos.y = dragStartPosition.y + dragMovement.y + relativeCamPositionToDragStart.y;
+    // Update camera position in mapsoace
+    camera.setCameraPosition(
+        dragStartPosition.x + dragMovement.x + relativeCamPositionToDragStart.x,
+        dragStartPosition.y + dragMovement.y + relativeCamPositionToDragStart.y
+    );
 
     // Clamp the real camera so we can only look at one continent at a time ;)
     camera.clampCameraPosition();
@@ -179,10 +183,10 @@ function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
         // Release the mouseup/mouse move events
         document.onmouseup = null;
         document.onmousemove = null;
-
+        let cameraPos = camera.getCurrentPosition();
         // Update the position to the saved data to make sure the position stays fixed when map gets moved/zoomed in
-        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.x = camera.zoomFactor * (squadMarker.offsetLeft - deltaMove.x + squadMarkerSize) + camera.onMapPos.x;
-        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.y = camera.zoomFactor * (squadMarker.offsetTop - deltaMove.y + squadMarkerSize) + camera.onMapPos.y;
+        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.x = camera.zoomFactor * (squadMarker.offsetLeft - deltaMove.x + squadMarkerSize) + cameraPos.x;
+        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.y = camera.zoomFactor * (squadMarker.offsetTop - deltaMove.y + squadMarkerSize) + cameraPos.y;
         // We aint dragging anymore, free up the map movement
         isDraggingThisElement = false;
         // Check if we dragged it all. If we didnt drag, then it was a click instead, so handle the event as a click instead
@@ -222,17 +226,7 @@ function handleSquadMarkerEvent(event: MouseEvent) {
 function handleSquadMarkerClick(event: MouseEvent, toggle = true, value = true) {
     // Get pID and sID of element we clicked on
     let [platoonID, squadID] = data.getPlatoonAndSquadOfMarkerElement(event.target as platoonHTMLElement);
-    // Get the squad data
-    let squad: squad = data.getSquad(platoonID, squadID);
-    // Set and save data
-    if (toggle) {
-        squad.isInPosition = !squad.isInPosition;
-    } else {
-        squad.isInPosition = value;
-    }
-    data.setSquad(platoonID, squadID, squad);
-    // Update the animation toggle for this squad only
-    mapRendering.updateSquadMarkerAnimation(platoonID, squadID);
+    setSquadMarkerMovingState(platoonID, squadID, toggle, value);
 }
 
 
@@ -251,6 +245,8 @@ function closeContextMenu() {
     UIRendering.closeContextWindow();
 }
 
+
+
 /** Deletes the squad the current context menu was opened on
  * TODO: Maybe move this to UIFunctions?
  */
@@ -259,14 +255,13 @@ function deleteSquadWithDropdown() {
     let sID = contextMenuSelected[1];
     // Only delete a squad if we have clicked on a valid squad
     if (pID >= 0 && sID >= 0) {
-        let squadToDelete = data.getSquad(pID, sID);
-        squadToDelete.isEmpty = true;
-        data.setSquad(pID, sID, squadToDelete);
-        mapRendering.updateSquadMarker(pID, sID, true);
+        setSquadMarkerDeletedState(pID, sID, false, true);
     }
 }
 
-/** Sends the squad with the context menu to the warpgate */
+/** Sends the squad with the context menu to the warpgate
+ * TODO: Maybe move this to UIFunctions?
+ */
 function sendSquadToWarpgate() {
     // Get some clear position near the warpgate
     let pos = data.getFreePositionNearWarpgate();
@@ -282,7 +277,6 @@ function sendSquadToWarpgate() {
 }
 
 
-
 /** The Menu buttons get created only once at start, so no need to add the listeners more than once either */
 function setDropdownMenuButtons() {
     document.getElementById("sendToWarpgateButton").addEventListener('click', () => {
@@ -295,6 +289,8 @@ function setDropdownMenuButtons() {
         closeContextMenu();
     });
 }
+
+
 
 setDropdownMenuButtons();
 

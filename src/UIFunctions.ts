@@ -5,21 +5,20 @@ import * as mapRendering from "./mapRendering";
 import * as color from 'color';
 import * as UIRendering from "./UIRendering";
 let electronWindow: Electron.BrowserWindow = require('electron').remote.getCurrentWindow();
+const Vue = require("../AAA/vue.js");
 
-
+const FOCUS = new Vue({ data() { return { value: true } } });
 
 /** We are updating the map when dragging only FPS/s often, so we safe if we dragged the map since last rendered frame */
 let didDragMap: boolean;
 
 
+
 /** Is the mouse currently on a interactable UI element? (Or is the window focused right now) */
-let FOCUS = true;
 
 
 /** Debug mode on/off? */
-let DEBUG = false;
-
-
+const DEBUG = false;
 
 /** Adds one platoon of filled squads near the warpgate. Rerenders everything afterwards */
 function addPlatoon() {
@@ -35,7 +34,7 @@ function addPlatoon() {
     let pt = new platoon(ptColor);
     // Add 4 empty squads first to push the platoon into the list
     pt.squads = [new squad(platoonNumber, "a", { x: 0, y: 0 }), new squad(platoonNumber, "b", { x: 0, y: 0 }), new squad(platoonNumber, "c", { x: 0, y: 0 }), new squad(platoonNumber, "d", { x: 0, y: 0 })];
-    data.platoons.push(pt);
+    data.vuePlatoonsObject.value.push(pt);
 
     // Now fill the squads and spawn them near the warpgate one after another so they dont intersect
     // Fill one squad at a time so the squads dont overlap
@@ -52,7 +51,11 @@ function addPlatoon() {
         data.setSquad(platoonNumber, i, newSquad)
     }
 
-    UIRendering.reRenderPlatoonBox();
+    mapRendering.reRenderMapBody();
+}
+
+function removePlatoon(platoonID: number) {
+    data.removePlatoon(platoonID);
     mapRendering.reRenderMapBody();
 }
 
@@ -72,34 +75,79 @@ function updateMapIfDragged() {
     }
 }
 
-
-/** Selects the continentID and warpgateID 
-*/
-function selectPosition(continentID: number, warpgateID: number) {
-    document.getElementById("continentSelectButton").style.backgroundColor = data.continentData[continentID].UIColor.secondary;
-    document.getElementById("continentSelectButton").innerHTML = data.continentData[continentID].name + " " + data.continentData[continentID].warpgates[warpgateID].name;
-    data.continentSelectedID = continentID;
-    data.warpgateSelectedID = warpgateID;
-    camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
-    camera.centerCamOnWarpgate();
-    mapRendering.updateSquadMarkerPositions();
-}
-
 /** Sets if the overlay is gonna ignore mouseevents or not */
 function setWindowsFocus(isFocus: boolean) {
-    FOCUS = isFocus;
+    FOCUS.value = isFocus;
     if (isFocus) {
         electronWindow.setIgnoreMouseEvents(false);
-        document.getElementById("debugDisplay").style.backgroundColor = "green";
-        document.getElementById("debugDisplay").innerText = "Focus";
     } else {
         if (!DEBUG) { electronWindow.setIgnoreMouseEvents(true, { forward: true }); }
-        document.getElementById("debugDisplay").style.backgroundColor = "red";
-        document.getElementById("debugDisplay").innerText = "Unfocused";
     }
 }
 
+/** Sets the delted state of a squad marker
+ * TODO: Maybe move this and setSquadMarkerMovingState into one function?
+ * @param platoonID platoonID of squad marker
+ * @param squadID squadID of squad marker
+ * @param toggle toggle the squad marker? if toggle is false, squad marker gets set to [value = true] instead
+ * @param value if true squad gets marked as deleted, false = not delted
+ */
+function setSquadMarkerDeletedState(platoonID: number, squadID: number, toggle = true, value = true) {
+    // Get the squad data
+    let squadData = data.getSquad(platoonID, squadID);
+
+    if (toggle) {
+        squadData.isEmpty = !squadData.isEmpty;
+    } else {
+        squadData.isEmpty = value;
+    }
+
+    // Save Data
+    data.setSquad(platoonID, squadID, squadData);
+    // Force Map Rendering update because squad was potentially deleted
+    mapRendering.updateSquadMarker(platoonID, squadID, true);
+}
+
+/** Sets the moving state of a squad marker
+ * TODO: Maybe move this and setSquadMarkerDeletedState into one function?
+ * @param platoonID platoonID of squad marker
+ * @param squadID squadID of squad marker
+ * @param toggle toggle the squad marker? if toggle is false, squad marker gets set to [value = true] instead
+ * @param value if true squad gets marked as moving, false = not moving
+ */
+function setSquadMarkerMovingState(platoonID: number, squadID: number, toggle = true, value = true) {
+    // Get the squad data
+    let squadData = data.getSquad(platoonID, squadID);
+
+    if (toggle) {
+        squadData.isInPosition = !squadData.isInPosition;
+    } else {
+        squadData.isInPosition = value;
+    }
+
+    // Save Data
+    data.setSquad(platoonID, squadID, squadData);
+    // Update the animation toggle for this squad only
+    mapRendering.updateSquadMarkerInPositionRender(platoonID, squadID);
+}
+
+/** Restarts the rendering after updating all the needed information for camera etc. */
+function restartRendering() {
+    // set new vars for camera and bounding box
+    camera.setScreenSpaceCorners(data.vueResolutionObject.value[data.resolutionSelectedID].mapBoundingBox);
+    camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
+    mapRendering.updateMapBoxSize();
+
+    // Enable rendering again
+    mapRendering.enableRendering();
+    // Re-Render everything to make sure every squadmarker has an element, etc.
+    mapRendering.reRenderMapBody(true);
+
+    // Center camera on new warpgate position
+    camera.centerCamOnWarpgate();
+    // Update squadmarker positions related to new warpgate position
+    mapRendering.updateSquadMarkerPositions();
+}
 
 
-
-export { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus, setMapAsDragged, FOCUS }
+export { addPlatoon, removePlatoon, restartRendering, updateMapIfDragged, setWindowsFocus, setMapAsDragged, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS }

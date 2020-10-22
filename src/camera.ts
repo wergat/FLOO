@@ -3,7 +3,7 @@ import data from "./data";
 
 class Camera {
     //   Constants
-    /** Top Left Corner of Camera */
+    /** Top Left Corner of Camera, in map space */
     onMapPos: coord = { x: 0, y: 0 };
     /** Current Zoom Level of Map */
     currentZoomLevel = 0;
@@ -11,7 +11,7 @@ class Camera {
     level = { min: 0, max: 6, resetMin: 0, resetMax: 4 }
     /** Zoom level size factors */
     // TODO: Investigate if X and Y screen scale at the same pace
-    factor =        [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18];
+    factor = [1, 1.4, 2.1, 3.425, 6.235, 12.24, 18];
 
     // First calc:  [1, 1.4,    2.1,    3.415,  6.23,   12.15,  17.93];
     // Second calc: [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18];
@@ -39,7 +39,11 @@ class Camera {
     /** screenSpaceCorners based on mapspace instead of screenspace + current camera position*/
     mapSpaceCorners: rect;
 
-    getCurrentPositionOnMap(): coord {
+    /** Factor for scaling resolution */
+    resolutionScaleFactor = 1;//0.75;
+
+    /** Returs the current camera position (top left corner) in map space */
+    getCurrentPosition(): coord {
         return this.onMapPos;
     }
 
@@ -48,6 +52,12 @@ class Camera {
         if (newLevel < this.level.min) { newLevel = this.level.min };
         if (newLevel > this.level.max) { newLevel = this.level.max };
         this.currentZoomLevel = newLevel;
+    }
+
+    /** Sets the default starting settings for window of size [_x,_y]*/
+    initSetWindowSize(_x: number, _y: number) {
+        this.setMapRenderSize(_x, _y);
+        this.setWindowSize(_x, _y);
     }
 
     /** Max Size of map that could be rendered, changed by zooming in/out */
@@ -59,17 +69,13 @@ class Camera {
         this.windowSize = { x: _x, y: _y };
     }
 
-    /** Does not clamp the camera position */
-    setCamerPosition(_x: number, _y: number): void;
-    setCamerPosition(_x: coord, _y: void): void;
-    setCamerPosition(_x: any, _y: any) {
-        if (_y == null) {
-            this.onMapPos = _x;
-        } else {
-            this.onMapPos = { x: _x, y: _y }
-        }
+    /** Sets the top left position of the camer in screen space  */
+    setCameraPosition(_x: any, _y: any) {
+        this.onMapPos = { x: _x, y: _y }
     }
 
+    /** Sets the corners where the camera can move to. Most noticable when fully zoomed out. 
+     * Prevents the cam from going too far away from the continent */
     setScreenSpaceCorners(_screenSpaceCorners: rect) {
         this.screenSpaceCorners = _screenSpaceCorners;
         this.recalculateMapSpaceCorners();
@@ -112,6 +118,12 @@ class Camera {
         return didReset;
     }
 
+    /** Updates the zoom factors based on resolution scaling and current zoom level*/
+    updateZoomFactors() {
+        this.zoomFactor = this.factor[this.currentZoomLevel] / this.resolutionScaleFactor;
+        this.invZoomFactor = 1 / (this.factor[this.currentZoomLevel] / this.resolutionScaleFactor);
+    }
+
     /** Handles the mousewheel on zoom in/out
      * DOES NOT clamp the position afterwards
      * @returns true if zoom level was changed
@@ -127,8 +139,7 @@ class Camera {
         let prevMapRenderSize = { x: this.mapRenderSize.x, y: this.mapRenderSize.y }
 
         // Update the zoom factors
-        this.zoomFactor = this.factor[this.currentZoomLevel];
-        this.invZoomFactor = 1 / this.factor[this.currentZoomLevel];
+        this.updateZoomFactors();
 
 
         this.mapRenderSize = { x: this.windowSize.x * this.zoomFactor, y: this.windowSize.y * this.zoomFactor }
@@ -156,10 +167,10 @@ class Camera {
      * DOES NOT RERENDER AFTERWARDS
     */
     centerCamOnWarpgate() {
-        this.centerMapOnPosition(data.getCurrentWarpgate().x,data.getCurrentWarpgate().y);
+        this.centerMapOnPosition(data.getCurrentWarpgate().x, data.getCurrentWarpgate().y);
         this.clampCameraPosition();
     }
-    
+
 
 }
 

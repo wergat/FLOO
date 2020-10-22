@@ -1,22 +1,40 @@
-import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement } from "./classes";
+import { coord, platoonHTMLElement, squadMarkerSizeSettings } from "./classes";
 import data from "./data";
 import camera from "./camera";
-import { addPlatoon, updateMapIfDragged, selectPosition, setWindowsFocus } from "./UIFunctions";
+import { setWindowsFocus } from "./UIFunctions";
 import { handleSquadMarkerEvent, makeSquadMarkerDragAble } from "./mouseEventHandler";
-import { enableClickPropagation } from "iohook";
-import color = require("color");
+
 
 interface HTMLArrowElement extends HTMLElement {
     rotation: number;
 }
 
+let sizeSettings: squadMarkerSizeSettings[] = [
+    { name: "normal", radius: 17, arrowDistance: 7 },
+    { name: "small", radius: 12, arrowDistance: 5 },
+    { name: "tiny", radius: 9, arrowDistance: 3 },
+]
+
+let settingSelected = 0;
+
 const ARROW_COUNT = 6;
 
-/** Border size of the Map Bounds Box */
-let mapBoundsBoxBorderSize = 5;
+/** Enables or disables the rendering of stuff on the map as whole
+ * usually off when tool "minimitzed" or setup not done yet
+ */
+let RENDER_MAP = true;
 
-/** (Half the) Size of the Squad marker in pixels TODO: THIS VAR EXISTS IN COPY IN UIRendering.ts */
-let squadMarkerSize = 17;
+
+let cached_mapBoxSizeX = 0;
+let cached_mapBoxSizeY = 0;
+
+function disableRendering() {
+    RENDER_MAP = false;
+}
+
+function enableRendering() {
+    RENDER_MAP = true;
+}
 
 function SetPositionOnCircle(ele: HTMLArrowElement, size = 20) {
     let deg = (ele.rotation - 135) % 360;
@@ -26,16 +44,11 @@ function SetPositionOnCircle(ele: HTMLArrowElement, size = 20) {
     ele.style.left = (Math.cos(rad) * size + rel.y) + "px";
 }
 
-// TODO: remove this, used for debug only
-function updateCirclePosition(i: number, j: number, size = 20) {
-    for (let k = 0; k < ARROW_COUNT; k++) { // 6 Arrows
-        let arrowEle = document.getElementById(`squadMarkerAnimationArrowP${i}S${j}A${k}`);
-        SetPositionOnCircle(arrowEle as HTMLArrowElement, size);
-    }
-}
-
-/** Rerenders all elements shown on the map itself */
-function reRenderMapBody() {
+/** Rerenders all elements shown on the map itself
+ * if forceSquads = true, forces all the squad markers to be updated even if they should not be rendered
+ * all squad markers must rendered at least once, so this needs to get called at loadup
+ */
+function reRenderMapBody(forceSquads = false) {
     let mapBodyElement = document.getElementById("mapBody");
 
     if (document.getElementById("MapBoundsBox") == null) {
@@ -44,81 +57,65 @@ function reRenderMapBody() {
         mapBodyElement.appendChild(mapBoundsBox);
     }
 
-
     let squadEle: HTMLDivElement;
     let letterDiv: HTMLDivElement;
-    let squadMarkerAnimationDiv: HTMLDivElement;
+    let squadMarkerArrowDiv: HTMLDivElement;
     let arrowEle: HTMLArrowElement;
 
-
+    let selSettings = sizeSettings[settingSelected];
 
     // Build HTML Framework for squad markers
-    // TODO: Remove use of innerHTML
     for (let i = 0; i < data.getPlatoonCount(); i++) {
         for (let j = 0; j < 4; j++) {
-            if (!data.getSquad(i, j).isEmpty) {
-                if (document.getElementById(`MarkerP${i}S${j}`) == null) {
-                    squadEle = document.createElement("div");
-                    squadEle.id = `MarkerP${i}S${j}`;
-                    squadEle.classList.add("squadMarker", "clickable");
-                    // The Letter
-                    letterDiv = document.createElement("div");
-                    letterDiv.classList.add("squadMarkerLetter", `squadMarkerLetter${data.getSquad(i, j).squadLetter}`);
-                    letterDiv.appendChild(document.createTextNode(data.getSquad(i, j).squadLetter));
-                    squadEle.appendChild(letterDiv);
-                    // Animation
-                    squadMarkerAnimationDiv = document.createElement("div");
-                    squadMarkerAnimationDiv.classList.add("squadMarkerAnimationDiv");
-                    squadMarkerAnimationDiv.id = `squadMarkerAnimationP${i}S${j}`;
-                    for (let k = 0; k < ARROW_COUNT; k++) { // 6 Arrows
-                        arrowEle = document.createElement("i") as HTMLArrowElement;
-                        arrowEle.classList.add("arrow", "squadAnimationArrow");
-                        arrowEle.id = `squadMarkerAnimationArrowP${i}S${j}A${k}`;
-                        arrowEle.style.transform = `rotate(${k * (360 / ARROW_COUNT)}deg)`;
-                        arrowEle.rotation = k * (360 / ARROW_COUNT);
-                        SetPositionOnCircle(arrowEle, 25);
-                        squadEle.appendChild(arrowEle);
-                    }
-                    squadEle.appendChild(squadMarkerAnimationDiv);
-                    mapBodyElement.append(squadEle);
+            if (document.getElementById(`MarkerP${i}S${j}`) == null) {
+                squadEle = document.createElement("div");
+                squadEle.id = `MarkerP${i}S${j}`;
+                squadEle.classList.add("squadMarker", "clickable");
+                // The Letter
+                letterDiv = document.createElement("div");
+                letterDiv.classList.add("squadMarkerLetter", `squadMarkerLetter${data.getSquad(i, j).squadLetter}`);
+                letterDiv.appendChild(document.createTextNode(data.getSquad(i, j).squadLetter));
+                squadEle.appendChild(letterDiv);
+                // Animation
+                squadMarkerArrowDiv = document.createElement("div");
+                for (let k = 0; k < ARROW_COUNT; k++) { // 6 Arrows
+                    arrowEle = document.createElement("i") as HTMLArrowElement;
+                    arrowEle.classList.add("arrow", "squadArrow");
+                    arrowEle.id = `squadMarkerArrowP${i}S${j}A${k}`;
+                    arrowEle.style.transform = `rotate(${k * (360 / ARROW_COUNT)}deg)`;
+                    arrowEle.rotation = k * (360 / ARROW_COUNT);
+                    SetPositionOnCircle(arrowEle, selSettings.radius + 7);
+                    squadEle.appendChild(arrowEle);
                 }
-
-                /*str += "<div id='' class='squadMarker clickable'>" +
-                    "<div class='squadMarkerLetter squadMarkerLetter" + data.getSquad(i, j).squadLetter + "'>" + data.getSquad(i, j).squadLetter + "</div>" +
-                    "<div class='squadMarkerAnimationDiv' id='squadMarkerAnimationP" + i + "S" + j + "'>" +
-                    "<i class='arrow squad' id='squadMarkerAnimationArrowP" + i + "S" + j + "'></i>" +
-                    "<i class='arrow squad' id='squadMarkerAnimationArrowP" + i + "S" + j + "'></i>" +
-                    "<i class='arrow squad' id='squadMarkerAnimationArrowP" + i + "S" + j + "'></i>" +
-                    "<i class='arrow squad' id='squadMarkerAnimationArrowP" + i + "S" + j + "'></i>" +
-                    "</div>" +
-                    "</div>";*/
+                squadEle.appendChild(squadMarkerArrowDiv);
+                mapBodyElement.append(squadEle);
             }
         }
     }
-
-
-    //document.getElementById("mapBody").innerHTML = str;
-
 
     let ele: platoonHTMLElement;
     // Add Hooks to make Squad Markers Dragable
     for (let i = 0; i < data.getPlatoonCount(); i++) {
         for (let j = 0; j < 4; j++) {
-            if (!data.getSquad(i, j).isEmpty) {
+            if (!data.getSquad(i, j).isEmpty || forceSquads) {
                 ele = document.getElementById(`MarkerP${i}S${j}`) as platoonHTMLElement;
                 // Add Information to keep track of this squad marker more easily within the document
+                if (ele.platoon != i) {
+                    makeSquadMarkerDragAble(ele);
+                    // Add listeners so we can change window focus so they are interactable
+                    ele.addEventListener('mouseleave', () => { setWindowsFocus(false); });
+                    ele.addEventListener('mouseenter', () => { setWindowsFocus(true); });
+                    ele.addEventListener('contextmenu', function (e) { handleSquadMarkerEvent(e); e.preventDefault(); }, false);
+                }
+
                 ele.platoon = i; ele.squad = j;
-                makeSquadMarkerDragAble(ele);
-                // Add listeners so we can change window focus so they are interactable
-                ele.addEventListener('mouseleave', () => { setWindowsFocus(false); });
-                ele.addEventListener('mouseenter', () => { setWindowsFocus(true); });
-                ele.addEventListener('contextmenu', function (e) { handleSquadMarkerEvent(e); e.preventDefault(); console.log(e); }, false);
+
 
                 let SquadStyle = ele.style;
-                SquadStyle.backgroundColor = data.getPlatoon(i).color.string();
-                let darker = data.getPlatoon(i).darkerColor.string();
-                let normal = data.getPlatoon(i).color.string();
-                let brighter = data.getPlatoon(i).brigtherColor.hex();
+                SquadStyle.backgroundColor = data.getPlatoon(i).color;
+                let darker = data.getPlatoon(i).darkerColor;
+                let normal = data.getPlatoon(i).color;
+                let brighter = data.getPlatoon(i).lightColor;
 
                 if (i % 3 > 0) {
                     let deg = 45 + i * 70;
@@ -135,27 +132,37 @@ function reRenderMapBody() {
         }
     }
 
-    updateSquadMarkerPositions();
+    updateSquadMarkerPositions(forceSquads);
+}
+
+function updateMapBoxSize() {
+    cached_mapBoxSizeX = data.getCurrentContinent().mapBoxSize.x;
+    cached_mapBoxSizeY = data.getCurrentContinent().mapBoxSize.y;
 }
 
 /** Updates Positions of Squad Markers and the Map Bounding Box */
-function updateSquadMarkerPositions() {
-    // Add Style
+function updateSquadMarkerPositions(force = false) {
     // Continent Bounding Box
     let ele = document.getElementById("MapBoundsBox");
-    let x = camera.invZoomFactor;
-    let y = camera.invZoomFactor;
+    let xZoomFactor = camera.invZoomFactor;
+    let yZoomFactor = camera.invZoomFactor;
+    // Update style of bounding box
+    ele.style.width = (xZoomFactor * cached_mapBoxSizeX) + "px";
+    ele.style.height = (yZoomFactor * cached_mapBoxSizeY) + "px";
+    let cameraOnMapPos: coord = camera.getCurrentPosition();
+    if (RENDER_MAP) {
+        ele.style.left = (xZoomFactor * (-cameraOnMapPos.x)) + "px";
+        ele.style.top = (yZoomFactor * (-cameraOnMapPos.y)) + "px";
+    } else {
+        ele.style.left = "-200px";
+        ele.style.top = "-200px";
+    }
 
-    ele.style.width = (x * data.getCurrentContinent().mapBoxSize.x - mapBoundsBoxBorderSize * 2) + "px";
-    ele.style.height = (y * data.getCurrentContinent().mapBoxSize.y - mapBoundsBoxBorderSize * 2) + "px";
-    let cameraOnMapPos: coord = camera.getCurrentPositionOnMap();
-    ele.style.left = (x * (-cameraOnMapPos.x)) + "px";
-    ele.style.top = (y * (-cameraOnMapPos.y)) + "px";
 
     // Platoon/Squad Positions
     for (var i = 0; i < data.getPlatoonCount(); i++) {
         for (var j = 0; j < 4; j++) {
-            updateSquadMarker(i, j);
+            updateSquadMarker(i, j, force);
         }
     }
 }
@@ -165,29 +172,29 @@ function updateSquadMarkerPositions() {
 */
 function updateSquadMarker(platoonID: number, squadID: number, force = false) {
     let x = 0; let y = 0;
-    let squadData: squad;
-    let cameraOnMapPos: coord = camera.getCurrentPositionOnMap();
+    // We only read the data here, no reason to save to disk if the squad is rendered or not
+    let squadData = data.getSquad(platoonID, squadID);;
+    let cameraOnMapPos: coord = camera.getCurrentPosition();
     let ele: HTMLElement;
     let factor = camera.invZoomFactor;
-    let animationEle: HTMLElement;
 
-    // We only read the data here, no reason to save to disk if the squad is rendered or not
-    squadData = data.getSquad(platoonID, squadID);
+    let squadMarkerSize = sizeSettings[settingSelected].radius;
 
     if (!squadData.isEmpty || force) {
         ele = document.getElementById(`MarkerP${platoonID}S${squadID}`);
+        if (ele == undefined) { console.log(`WHAT THE FUCK MarkerP${platoonID}S${squadID} not found!`) }
         x = (squadData.pos.x - cameraOnMapPos.x);
         y = (squadData.pos.y - cameraOnMapPos.y);
         // If Squad marker is on screen (and not deleted)
-        if (x >= 0 && x <= camera.mapRenderSize.x && y >= 0 && y <= camera.mapRenderSize.y && !squadData.isEmpty) {
+        if (!squadData.isEmpty && x >= 0 && x <= camera.mapRenderSize.x && y >= 0 && y <= camera.mapRenderSize.y) {
             squadData.isRendered = true;
             // Screen position of squad is dependend on zoom
             ele.style.left = (factor * x - squadMarkerSize) + "px";
             ele.style.top = (factor * y - squadMarkerSize) + "px";
             // Update squad animation
-            updateSquadMarkerAnimation(platoonID, squadID);
+            updateSquadMarkerInPositionRender(platoonID, squadID);
         } else {
-            if (squadData.isRendered) {
+            if (squadData.isRendered || force) {
                 ele.style.left = "-100px";
                 ele.style.top = "-100px";
                 squadData.isRendered = false;
@@ -196,23 +203,27 @@ function updateSquadMarker(platoonID: number, squadID: number, force = false) {
     }
 }
 
-function updateSquadMarkerAnimation(platoonID: number, squadID: number) {
+/**
+ * Updates the render of the inPosition arrows on the squad marker, but only if the current state and already rendered state are not the same
+ * @param platoonID id of platoon
+ * @param squadID if of squad
+ */
+function updateSquadMarkerInPositionRender(platoonID: number, squadID: number) {
     let squadData = data.getSquad(platoonID, squadID);
-    let ele = document.getElementById(`squadMarkerAnimationP${platoonID}S${squadID}`);
+    // We dont need to update the squad marker if the state didnt change
+    if (squadData.isInPositionRenderedState == squadData.isInPosition) { return; }
     let arrowEle: HTMLElement;
     if (squadData.isInPosition) { // If squad in position, remove animation right now
-        ele.style.display = "none";
         for (let i = 0; i < ARROW_COUNT; i++) {
-            arrowEle = document.getElementById(`squadMarkerAnimationArrowP${platoonID}S${squadID}A${i}`);
+            arrowEle = document.getElementById(`squadMarkerArrowP${platoonID}S${squadID}A${i}`);
             arrowEle.style.display = "none";
         }
     } else { // Otherwise add it to the queue to activate it later, but start the animation no as well just to react
-        ele.style.display = "block"
         for (let i = 0; i < ARROW_COUNT; i++) {
-            arrowEle = document.getElementById(`squadMarkerAnimationArrowP${platoonID}S${squadID}A${i}`);
+            arrowEle = document.getElementById(`squadMarkerArrowP${platoonID}S${squadID}A${i}`);
             arrowEle.style.display = "inline-block";
         }
     }
 }
 
-export { reRenderMapBody, updateSquadMarkerPositions, updateSquadMarker, updateCirclePosition, updateSquadMarkerAnimation }
+export { reRenderMapBody, updateSquadMarkerPositions, updateSquadMarker, updateSquadMarkerInPositionRender, updateMapBoxSize, disableRendering, enableRendering, RENDER_MAP }

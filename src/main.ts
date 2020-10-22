@@ -3,7 +3,8 @@ import { app, BrowserWindow } from "electron";
 import * as path from "path";
 
 const ioHook = require('iohook');
-const activeWin = require('active-win');
+// "active-win": "^6.2.0",
+//const activeWin = require('active-win');
 
 const DEBUG = false
 const IGNOREWINDOW = true;
@@ -29,7 +30,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
   mainWindow.maximize();
   mainWindow.setIgnoreMouseEvents(IGNOREWINDOW, { forward: IGNOREWINDOW });
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
   winWebContents = mainWindow.webContents;
 
   console.log('Window Created');
@@ -37,7 +38,7 @@ function createWindow() {
 
 /** Focus changes on mouse down, usually, so we can check if the current window is planetside or not or something else */
 function handleMouseDown(event: any) {
-  event.activeWindow = activeWin.sync();
+  //event.activeWindow = activeWin.sync();
   mouseEventHandler(event);
 }
 
@@ -76,6 +77,11 @@ if (require('electron-squirrel-startup')) {
     ioHook.on('mousedrag', mouseEventHandler);
     ioHook.on('keydown', keyEventHandler);
     ioHook.on('keyup', keyEventHandler);
+
+    if (process.env.NODE_ENV !== 'production') {
+      require('vue-devtools').install()
+      console.log("Dev Mode");
+    }
   })
 
   app.on('before-quit', () => {

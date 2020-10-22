@@ -1,172 +1,57 @@
-import { squad, platoonHTMLElement } from "./classes"
+import { squad, platoonHTMLElement, platoon, resolutionSettings } from "./classes"
 import { mousePos, dragMovement, dragStartPosition } from "./mouseEventHandler";
 import data from "./data";
 import camera from "./camera";
-import { selectPosition } from "./UIFunctions";
 
+import { addPlatoon, removePlatoon, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS, restartRendering } from "./UIFunctions";
+
+const Vue = require("../AAA/vue.js");
+import Buefy from "buefy";
+
+Vue.use(Buefy, {
+    defaultIconPack: 'fas',
+    defaultContainerElement: '#content'
+});
 
 
 /** (Half the) Size of the Squad marker in pixels */
 let squadMarkerSize = 17;
 
-
-/** Platoon Box on the left that is currently opened -1 := none opend 
- * TODO: Move this to UIFunctions
-*/
-let OpenedPlatoonBox = -1;
-
-
 /** HTML Element for mouse Debug information */
-let mousePosBox = document.getElementById("MousePosBox");
+
+
+const MousePositionApp = new Vue({
+    data() {
+        return {
+            isActive: true,
+            mouseScreenPos: "",
+            mouseMapPos: "",
+            cameraPos: "",
+            zoomFactor: "",
+            drag: ""
+        }
+    }
+})
+MousePositionApp.$mount('#MousePosBox')
+
+
+function initMousePosBox() {
+    let mpbStyle = document.getElementById("MousePosBox").style
+    mpbStyle.bottom = "0px";
+    mpbStyle.position = "absolute";
+}
+initMousePosBox();
 
 
 /** Actually updates the html of the mouse debug box */
 function updateMouseDebugBoxHTML() {
-    mousePosBox.innerHTML = "Mouse Screen @ [" + mousePos.x + "|" + mousePos.y + "]<br>" +
-        "Mouse Map @ [" + (camera.onMapPos.x + camera.zoomFactor * mousePos.x).toFixed(2) + "|" + (camera.onMapPos.y + camera.zoomFactor * mousePos.y).toFixed(2) + "] <br>" +
-        "MapEdge @ [" + (camera.onMapPos.x).toFixed(2) + "|" + (camera.onMapPos.y).toFixed(2) + "] <br>" +
-        "Zoom Level " + camera.zoomFactor + " [" + camera.currentZoomLevel + "] @ [" + (camera.mapRenderSize.x).toFixed(0) + "x" + (camera.mapRenderSize.y).toFixed(0) + "] <br>" +
-        "Drag @ [" + (dragStartPosition.x).toFixed(2) + "|" + (dragStartPosition.y).toFixed(2) + "] -> [" + (dragMovement.x).toFixed(2) + "|" + (dragMovement.y).toFixed(2) + "]";
+    let cameraPos = camera.getCurrentPosition();
+    MousePositionApp.mouseScreenPos = "Mouse Screen @ [" + mousePos.x + "|" + mousePos.y + "]";
+    MousePositionApp.mouseMapPos = "Mouse Map @ [" + (cameraPos.x + camera.zoomFactor * mousePos.x).toFixed(2) + "|" + (cameraPos.y + camera.zoomFactor * mousePos.y).toFixed(2) + "]";
+    MousePositionApp.cameraPos = "MapEdge @ [" + (cameraPos.x).toFixed(2) + "|" + (cameraPos.y).toFixed(2) + "]";
+    MousePositionApp.zoomFactor = "Zoom Level " + camera.zoomFactor + " [" + camera.currentZoomLevel + "] @ [" + (camera.mapRenderSize.x).toFixed(0) + "x" + (camera.mapRenderSize.y).toFixed(0) + "]";
+    MousePositionApp.drag = "Drag @ [" + (dragStartPosition.x).toFixed(2) + "|" + (dragStartPosition.y).toFixed(2) + "] -> [" + (dragMovement.x).toFixed(2) + "|" + (dragMovement.y).toFixed(2) + "]";
 }
-
-
-/**
-    Creates the dropdown part with the arrow of the platoon list
- */
-function getPlatoonListElement(i: number): HTMLDivElement {
-    let platoonListElement = document.createElement("div");
-    platoonListElement.id = `platoonListID${i}`;
-    platoonListElement.classList.add("platoonListID");
-    platoonListElement.appendChild(document.createTextNode(`Platoon${i}`));
-
-    let ptArrowElement = document.createElement("div");
-    let ptIElement = document.createElement("i");
-    ptIElement.id = `platoon${i}Arrow`;
-    ptIElement.classList.add("arrow", "down");
-    ptArrowElement.appendChild(ptIElement);
-
-    platoonListElement.appendChild(ptArrowElement);
-
-    return platoonListElement;
-}
-
-/**
-    creates squad detail part of the platoon listv
- */
-function getPlatoonListSquadList(i: number): HTMLDivElement {
-    let squadListElement = document.createElement("div");
-    squadListElement.classList.add("squadList");
-    for (let j = 0; j < 4; j++) {
-        let squadListEntryElement = document.createElement("div");
-        squadListEntryElement.id = `squadListEntryP${i}S${j}`;
-        squadListEntryElement.classList.add("squadListEntry");
-
-        let squadListEntryLetterElement = document.createElement("div");
-        squadListEntryLetterElement.classList.add("squadListEntryLetter");
-        let letterElement = document.createElement("a");
-        letterElement.appendChild(document.createTextNode(`${squad.validLetters[j]}`));
-        squadListEntryLetterElement.appendChild(letterElement);
-        squadListEntryElement.appendChild(squadListEntryLetterElement);
-
-        let squadListEntryNameElement = document.createElement("div");
-        squadListEntryNameElement.classList.add("squadListEntryName");
-        squadListEntryNameElement.id = `squadListNameP${i}S${j}`;
-        squadListEntryNameElement.contentEditable = "true";
-        squadListEntryNameElement.appendChild(document.createTextNode(data.getSquad(i, j).name));
-        squadListEntryElement.appendChild(squadListEntryNameElement);
-
-        squadListElement.appendChild(squadListEntryElement);
-    }
-    return squadListElement;
-}
-
-function reRenderPlatoonBox() {
-    let str = "";
-    let platoonBoxElement = document.getElementById("PlatoonBox");
-    platoonBoxElement.innerHTML = "";
-
-    for (let i = 0; i < data.getPlatoonCount(); i++) {
-        let platoonListEntry = document.createElement("div");
-        platoonListEntry.id = `platoon${i}`;
-        platoonListEntry.classList.add("platoonListEntry");
-        platoonListEntry.appendChild(getPlatoonListElement(i));
-        platoonListEntry.appendChild(getPlatoonListSquadList(i));
-        platoonBoxElement.appendChild(platoonListEntry);
-    }
-
-    for (let i = 0; i < data.getPlatoonCount(); i++) {
-        document.getElementById("platoon" + i).style.backgroundColor = data.getPlatoon(i).color.toString();
-        let a = i;
-        document.getElementById("platoonListID" + i).addEventListener('click', function () { extendPlatoonList(a); });
-        for (let j = 0; j < 4; j++) {
-            let b = j;
-            document.getElementById("squadListNameP" + a + "S" + b).addEventListener("input", function () { data.getSquad(a, b).name = document.getElementById("squadListNameP" + a + "S" + b).innerText; }, false);
-            document.getElementById("squadListEntryP" + i + "S" + j).style.float = (j % 2 == 0) ? "left" : "right";
-        }
-    }
-}
-
-/** Re-renders the continent select button */
-function reRenderContinentSelectButtons() {
-    let dropdownElement = document.getElementById("continentSelectDropdown");
-    let str = "";
-
-    let contID = 0;
-    for (let continent of data.continentData) {
-        str += "<div class='dropdownWarpgate'>" +
-            "<button class='warpgateSelectButton' id='continentSelectButton" + continent.name + "'>" + continent.name + "</button>" +
-            "<div class='dropdownWarpgate-content' id='warpgateSelectDropdown'>";
-        let WGID = 0;
-        for (let warpgate of continent.warpgates) {
-            str += "<a id='selectC" + contID + "WG" + WGID + "'>" + warpgate.name + "</a>";
-            WGID++;
-        }
-        str += "</div></div>";
-        contID++;
-    }
-    dropdownElement.innerHTML = str;
-
-    // Apply dynamic style changes
-    contID = 0;
-    for (var continent of data.continentData) {
-        let ele = document.getElementById("continentSelectButton" + continent.name);
-        ele.style.backgroundColor = continent.UIColor.secondary;
-        var WGID = 0;
-        for (var warpgate of continent.warpgates) {
-            let a = contID; let b = WGID; // Temp vars because js doesnt know how to not handle reference type variables
-            document.getElementById(`selectC${contID}WG${WGID}`).addEventListener('click', function () { selectPosition(a, b); });
-            WGID++;
-        }
-        contID++;
-    }
-}
-
-/** Rerenders everything in the left UI Box */
-function reRenderLeftBox() {
-    reRenderPlatoonBox();
-    reRenderContinentSelectButtons();
-}
-
-
-/** Opens/extends the tab of Platoon pID to show more detail/options */
-function extendPlatoonList(pID: number) {
-    if (OpenedPlatoonBox >= 0) {
-        document.getElementById("platoon" + OpenedPlatoonBox).style.height = "72px";
-        document.getElementById("platoon" + OpenedPlatoonBox + "Arrow").classList.add('down');
-        document.getElementById("platoon" + OpenedPlatoonBox + "Arrow").classList.remove('up');
-    }
-    if (OpenedPlatoonBox != pID) {
-        document.getElementById("platoon" + pID).style.height = "200px";
-        document.getElementById("platoon" + pID + "Arrow").classList.add('up');
-        document.getElementById("platoon" + pID + "Arrow").classList.remove('down');
-        OpenedPlatoonBox = pID;
-    } else {
-        OpenedPlatoonBox = -1;
-    }
-}
-
-
-
 
 /** Closes the Context Window again with animation, then removes it from the screen after .05s */
 function closeContextWindow() {
@@ -185,8 +70,205 @@ function openSquadContextWindow(e: MouseEvent) {
     menuEle.style.left = (camera.invZoomFactor * (data.getSquad(i, j).pos.x - camera.onMapPos.x) - squadMarkerSize + relativePos.x) + "px";
     menuEle.style.top = (camera.invZoomFactor * (data.getSquad(i, j).pos.y - camera.onMapPos.y) - squadMarkerSize + relativePos.y) + "px";
     menuEle.style.height = "200px";
-
-
 }
 
-export { updateMouseDebugBoxHTML, closeContextWindow, openSquadContextWindow, extendPlatoonList, reRenderLeftBox, reRenderPlatoonBox, reRenderContinentSelectButtons, OpenedPlatoonBox }
+let app = new Vue({
+    el: "#debugDisplay",
+    data() {
+        return {
+            isFocused: false
+        }
+    },
+    methods: {
+        getText(): string {
+            return FOCUS.value ? "Focused" : "Unfocsued";
+        }
+    }
+});
+
+
+
+let leftBoxContentApp = new Vue({
+    el: "#leftBoxContentApp",
+    data() {
+        return {
+            // Tab active (Either Settings or Platoon)
+            activeContentTab: 0,
+            // Platoon ID of Card opened
+            platoonCardOpen: -1,
+            // Platoon Data
+            platoons: data.vuePlatoonsObject,
+
+            settingsDone: true,
+            // Data for continents, TODO: be loaded from data instead
+            continents: data.vueContinentObject,
+
+            resolutions: data.vueResolutionObject,
+
+            continentSelectedID: -1,
+            warpgateSelectedID: -1,
+            selectedParentResolution: "",
+            selectedResolutionID: -1,
+            autoResolutionTarget: "",
+
+
+
+            factionSelect: '',
+            // Methods:
+            toggleSquadDelete: function (platoonID: number, squadID: number, event: Event) {
+                if (platoonID >= 0 && squadID >= 0) {
+                    setSquadMarkerDeletedState(platoonID, squadID, true);
+                }
+            },
+
+            toggleSquadArrival: function (platoonID: number, squadID: number, event: Event) {
+                if (platoonID >= 0 && squadID >= 0) {
+                    setSquadMarkerMovingState(platoonID, squadID, true);
+                }
+            },
+
+            openSquad: function (platoonID: number) {
+                this.platoonCardOpen = platoonID;
+            },
+
+            platoonNameChangeDone: function () {
+                data.savePlatoonData();
+            },
+
+            addPlatoon: function () {
+                addPlatoon();
+            },
+
+            removePlatoon: function (id: number) {
+                removePlatoon(id);
+            },
+
+            saveSettings: function () {
+                startRendering()
+            },
+
+            autoDetectResolution: function (arr: resolutionSettings[]) {
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i].detected == this.autoResolutionTarget) {
+                        this.selectedParentResolution = arr[i].parent;
+                        this.selectedResolutionID = arr[i].id;
+                    }
+                }
+            },
+
+            getStyleElement: function (platoonData: platoon, squadIndex: number) {
+                let isEmpty = platoonData.squads[squadIndex].isEmpty;
+                let light = platoonData.lightColor;
+                let normal = platoonData.color;
+                let darker = platoonData.darkerColor;
+                if (!platoonData.squads[squadIndex].isInPosition && !isEmpty) {
+                    return {
+                        color: darker,
+                        background: `repeating-linear-gradient(45deg, ${light}, ${light} 5px, transparent 5px, transparent 10px)`,
+                        borderColor: isEmpty ? normal : darker
+                    }
+                } else {
+                    return {
+                        color: darker,
+                        backgroundColor: isEmpty ? 'transparent' : light,
+                        borderColor: isEmpty ? normal : darker
+                    }
+                }
+
+            },
+        }
+    },
+    computed: {
+
+        getSettingsProgress: function (): number {
+            let perc = 0;
+            if (this.isWarpgateAndContinentOkay) {
+                perc += 34;
+            }
+            if (this.isResolutionOkay) {
+                perc += 34;
+            }
+            if (this.factionSelect != '') {
+                perc += 32;
+            }
+            return perc;
+        },
+
+        isWarpgateAndContinentOkay: function (): boolean {
+            return this.continentSelectedID >= 0 && this.warpgateSelectedID >= 0;
+        },
+
+        isResolutionOkay: function (): boolean {
+            if (this.selectedResolutionID < 0) {
+                return false;
+            }
+            if (this.resolutions.value[this.selectedResolutionID].parent === this.selectedParentResolution) {
+                return true;
+            }
+            return false;
+        },
+
+        getSupportedParentResolutions: function (): any {
+            let list = [];
+            for (let i = 0; i < this.resolutions.value.length; i++) {
+                if (list.indexOf(this.resolutions.value[i].parent) === -1) {
+                    list.push({ name: this.resolutions.value[i].parent, id: this.resolutions.value[i].id });
+                }
+            }
+            return list;
+        },
+
+        getSupportedResolutions: function (): any {
+            let list = [];
+            for (let i = 0; i < this.resolutions.value.length; i++) {
+                if (this.resolutions.value[i].parent === this.selectedParentResolution) {
+                    list.push({ name: this.resolutions.value[i].resolution, id: this.resolutions.value[i].id });
+                }
+            }
+            return list;
+        },
+
+        getWarpgates: function () {
+            if (this.continentSelectedID >= 0) {
+                return this.continents.value[this.continentSelectedID].warpgates;
+            } else {
+                return [{ id: 0, name: "no warpgate data found" }];
+            }
+        }
+    }
+})
+
+/** Loads the current settings into the vue instance
+ * used to load initial data on startup
+ */
+function loadSettingsData() {
+    leftBoxContentApp.selectedResolutionID = data.resolutionSelectedID;
+    leftBoxContentApp.continentSelectedID = data.continentSelectedID;
+    leftBoxContentApp.warpgateSelectedID = data.warpgateSelectedID;
+    leftBoxContentApp.selectedParentResolution = data.vueResolutionObject.value[data.resolutionSelectedID].parent;
+}
+
+/** Enables rendering and stuff after settings are set */
+function startRendering() {
+    // Save data
+    data.resolutionSelectedID = leftBoxContentApp.selectedResolutionID;
+    data.continentSelectedID = leftBoxContentApp.continentSelectedID;
+    data.warpgateSelectedID = leftBoxContentApp.warpgateSelectedID;
+
+    restartRendering();
+
+    // Mark settings as being completed, yay. Platoons can now be accessed/edited
+    leftBoxContentApp.settingsDone = true;
+}
+
+/** Sets the resolution used to auto-detect the current screen size */
+function setAutoDetectResolution(s: string) {
+    leftBoxContentApp.autoResolutionTarget = s;
+}
+
+function forceSettingsCheck() {
+    leftBoxContentApp.settingsDone = false;
+    leftBoxContentApp.activeContentTab = 1;
+}
+
+export { updateMouseDebugBoxHTML, closeContextWindow, openSquadContextWindow, forceSettingsCheck, setAutoDetectResolution, loadSettingsData, leftBoxContentApp }

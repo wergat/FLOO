@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
     "noImplicitAny": true,
-    "sourceMap": true,
+    "noImplicitThis": false,
+    "inlineSourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
@@ -10,7 +10,10 @@
         "node_modules/*"
       ]
     },
-    "jsx": "react"
+    "target": "ES2020",
+    "module": "CommonJS",
+    "jsx": "react-native",
+    "moduleResolution": "node"
   },
   "include": [
     "src/**/*"
