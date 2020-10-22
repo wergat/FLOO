@@ -36,7 +36,7 @@ class platoon {
         this.lightColor = tColor.lighten(0.5).toString();
     }
     constructor(color: color) {
-        this.name = "ajshdashjkdsa";
+        this.name = "No Name";
         this.SetColor(color);
         // Alpha, Bravo, Charly, Delta
         this.squads = [];

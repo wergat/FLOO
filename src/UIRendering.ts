@@ -245,7 +245,13 @@ function loadSettingsData() {
     leftBoxContentApp.selectedResolutionID = data.resolutionSelectedID;
     leftBoxContentApp.continentSelectedID = data.continentSelectedID;
     leftBoxContentApp.warpgateSelectedID = data.warpgateSelectedID;
-    leftBoxContentApp.selectedParentResolution = data.vueResolutionObject.value[data.resolutionSelectedID].parent;
+    if (data.vueResolutionObject.value[data.resolutionSelectedID] !== undefined) {
+        if (data.vueResolutionObject.value[data.resolutionSelectedID].parent !== undefined) {
+            leftBoxContentApp.selectedParentResolution = data.vueResolutionObject.value[data.resolutionSelectedID].parent;
+        }
+
+    }
+
 }
 
 /** Enables rendering and stuff after settings are set */

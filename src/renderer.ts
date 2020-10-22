@@ -73,6 +73,7 @@ Array.from(document.getElementsByClassName("clickable")).forEach((el) => {
 
 
 
-
-// Updating Map Rendering based on data now that everything should be okay
-restartRendering();
+if (!needChanges) {
+    // Updating Map Rendering based on data now that everything should be okay
+    restartRendering();
+}
