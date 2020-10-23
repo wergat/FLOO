@@ -1,5 +1,5 @@
 /* Welcome to main.ts, also known as the Main Process*/
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import * as path from "path";
 
 const ioHook = require('iohook');
@@ -7,7 +7,7 @@ const ioHook = require('iohook');
 //const activeWin = require('active-win');
 
 const DEBUG = false
-const IGNOREWINDOW = false;
+const IGNOREWINDOW = true;
 
 let winWebContents: Electron.WebContents;
 
@@ -15,7 +15,14 @@ app.allowRendererProcessReuse = true;
 
 function createWindow() {
   // Create the browser window.
+  let displays = screen.getAllDisplays();
+  let externalDisplay = displays.find((display) => {
+    return display.bounds.x !== 0 || display.bounds.y !== 0
+  });
+
   const mainWindow = new BrowserWindow({
+    //x: externalDisplay.bounds.x + 50,
+    //y: externalDisplay.bounds.y + 50,
     width: 800,
     height: 600,
     frame: false,
@@ -30,7 +37,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
   mainWindow.maximize();
   mainWindow.setIgnoreMouseEvents(IGNOREWINDOW, { forward: IGNOREWINDOW });
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
   winWebContents = mainWindow.webContents;
 
   console.log('Window Created');

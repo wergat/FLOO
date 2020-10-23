@@ -2,8 +2,7 @@ import { platoon, squad, platoonHTMLElement, coord } from "./classes"
 import data from "./data";
 import camera from "./camera";
 import * as mapRendering from "./mapRendering";
-import * as color from 'color';
-import * as UIRendering from "./UIRendering";
+import * as Color from 'color';
 let electronWindow: Electron.BrowserWindow = require('electron').remote.getCurrentWindow();
 const Vue = require("../AAA/vue.js");
 
@@ -23,15 +22,37 @@ const DEBUG = false;
 /** Adds one platoon of filled squads near the warpgate. Rerenders everything afterwards */
 function addPlatoon() {
     let platoonNumber = data.getPlatoonCount();
-    let ptColor: color;
+    let ptColor: Color;
     // Get color from plat color array
     if (platoonNumber < data.platColors.length) {
         ptColor = data.platColors[platoonNumber];
-    } else {// Just invent some new color if we run out of preset options  
-        ptColor = color.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255);
+    } else {// JuST iNvENt soMe nEW cOLeR if we run out of preset options
+        let hue = 0;
+        let freedom = 60;
+        let found = false;
+        let compareHue = 0;
+        let distance = 0;
+        while(!found){
+            found = true;
+            hue = Math.random() * 360;
+            freedom--;
+            for(let i = 0; i < platoonNumber; i++){
+                compareHue = Color(data.getPlatoon(i).color).hue();
+                distance = Math.abs(( hue - compareHue + 180 + 360) % 360 - 180);
+                if(distance < freedom){
+                    found = false;
+                    break;
+                }
+            }
+
+        }
+        console.log(`Freedom of angle: ${freedom}`);
+        ptColor = Color(`hsl(${hue},${50 + Math.random() * 15 * Math.random() * 15}%,${40 + Math.random() * 20 + Math.random() * 10}%)`);
     }
 
-    let pt = new platoon(ptColor);
+    let pt = new platoon();
+    setPlatoonColor(pt, ptColor);
+
     // Add 4 empty squads first to push the platoon into the list
     pt.squads = [new squad(platoonNumber, "a", { x: 0, y: 0 }), new squad(platoonNumber, "b", { x: 0, y: 0 }), new squad(platoonNumber, "c", { x: 0, y: 0 }), new squad(platoonNumber, "d", { x: 0, y: 0 })];
     data.vuePlatoonsObject.value.push(pt);
@@ -54,8 +75,36 @@ function addPlatoon() {
     mapRendering.reRenderMapBody();
 }
 
+function setPlatoonColor(platoon: platoon, color: Color) {
+    platoon.lightestColor = color.lighten(0.5).toString();
+    platoon.lightColor = color.lighten(0.25).toString();
+    platoon.color = color.toString();
+    platoon.darkColor = color.darken(0.25).toString();
+    platoon.darkestColor = color.darken(0.5).toString();
+}
+
+
+/** TODO: Fix removed platoons still rendering */
 function removePlatoon(platoonID: number) {
+    // Set all squad to not render them
+    for (let i = 0; i < 4; i++) {
+        let squad = data.getSquad(platoonID, i);
+        squad.isEmpty = true;
+        data.setSquad(platoonID, i, squad);
+    }
+    // Render them as not being there
+    for (let i = 0; i < 4; i++) {
+        mapRendering.updateSquadMarker(platoonID, i, true);
+    }
+
+    // Actually remove them, now that they are not being rendered anymore
     data.removePlatoon(platoonID);
+
+    // Clean up abbandoned squad markers
+    for (let i = 0; i < 4; i++) {
+        mapRendering.cleanUpSquadMarker(data.getPlatoonCount(), i);
+    }
+
     mapRendering.reRenderMapBody();
 }
 
@@ -136,6 +185,8 @@ function restartRendering() {
     // set new vars for camera and bounding box
     camera.setScreenSpaceCorners(data.vueResolutionObject.value[data.resolutionSelectedID].mapBoundingBox);
     camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
+    camera.resolutionScaleFactor = data.vueResolutionObject.value[data.resolutionSelectedID].resolutionScale;
+
     mapRendering.updateMapBoxSize();
 
     // Enable rendering again
@@ -150,4 +201,4 @@ function restartRendering() {
 }
 
 
-export { addPlatoon, removePlatoon, restartRendering, updateMapIfDragged, setWindowsFocus, setMapAsDragged, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS }
+export { addPlatoon, setPlatoonColor, removePlatoon, restartRendering, updateMapIfDragged, setWindowsFocus, setMapAsDragged, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS }

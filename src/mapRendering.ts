@@ -109,30 +109,36 @@ function reRenderMapBody(forceSquads = false) {
                 }
 
                 ele.platoon = i; ele.squad = j;
-
-
-                let SquadStyle = ele.style;
-                SquadStyle.backgroundColor = data.getPlatoon(i).color;
-                let darker = data.getPlatoon(i).darkerColor;
-                let normal = data.getPlatoon(i).color;
-                let brighter = data.getPlatoon(i).lightColor;
-
-                if (i % 3 > 0) {
-                    let deg = 45 + i * 70;
-                    let sizeA = 5 + ((i * 3) % 7);
-                    let sizeB = 5 + ((i * 4) % 7);
-                    SquadStyle.background = `repeating-linear-gradient(${deg}deg, ${brighter}, ${brighter} ${sizeA}px, ${normal} ${sizeB}px, ${normal} ${sizeA + sizeB}px)`;
-                } else {
-                    SquadStyle.background = `repeating-radial-gradient(circle, ${brighter}, ${brighter} 10px, ${normal} 10px, ${normal} 20px)`;
-                }
-
-
-                SquadStyle.borderColor = darker
             }
         }
+        updatePlatoonColor(i);
     }
 
     updateSquadMarkerPositions(forceSquads);
+}
+
+/** Updates the background and border color styles of all squad within a given platoon */
+function updatePlatoonColor(platoonID: number) {
+    let platoon = data.getPlatoon(platoonID);
+    let darker = platoon.darkestColor;
+    let normal = platoon.color;
+    let brighter = platoon.lightestColor;
+
+    for (let j = 0; j < 4; j++) {
+        let SquadStyle = document.getElementById(`MarkerP${platoonID}S${j}`).style;
+        SquadStyle.backgroundColor = normal;
+        if (platoonID % 4 > 0) {
+            let deg = 45 + platoonID * 70;
+            let sizeA = 5 + ((platoonID * 3) % 7);
+            let sizeB = 5 + ((platoonID * 4) % 7);
+            SquadStyle.background = `repeating-linear-gradient(${deg}deg, ${brighter}, ${brighter} ${sizeA}px, ${normal} ${sizeB}px, ${normal} ${sizeA + sizeB}px)`;
+        } else {
+            SquadStyle.background = `repeating-radial-gradient(circle, ${brighter}, ${brighter} 10px, ${normal} 10px, ${normal} 20px)`;
+        }
+
+        SquadStyle.borderColor = darker
+    }
+
 }
 
 function updateMapBoxSize() {
@@ -167,6 +173,20 @@ function updateSquadMarkerPositions(force = false) {
     }
 }
 
+/** Removes squadmarkes from map
+ * gets called when stuff gets deleted
+ * just hides them
+ */
+function cleanUpSquadMarker(platoonID: number, squadID: number) {
+    let ele = document.getElementById(`MarkerP${platoonID}S${squadID}`);
+    if (ele == undefined) { 
+        console.log(`WHAT THE FUCK MarkerP${platoonID}S${squadID} not found!`);
+        return;
+    }
+    ele.style.left = "-100px";
+    ele.style.top = "-100px";
+}
+
 /** Updates one single squad marker 
  * if force = true updates the squadmarker even if it was empty/"deleted" 
 */
@@ -192,7 +212,7 @@ function updateSquadMarker(platoonID: number, squadID: number, force = false) {
             ele.style.left = (factor * x - squadMarkerSize) + "px";
             ele.style.top = (factor * y - squadMarkerSize) + "px";
             // Update squad animation
-            updateSquadMarkerInPositionRender(platoonID, squadID);
+            updateSquadMarkerInPositionArrows(platoonID, squadID);
         } else {
             if (squadData.isRendered || force) {
                 ele.style.left = "-100px";
@@ -208,7 +228,7 @@ function updateSquadMarker(platoonID: number, squadID: number, force = false) {
  * @param platoonID id of platoon
  * @param squadID if of squad
  */
-function updateSquadMarkerInPositionRender(platoonID: number, squadID: number) {
+function updateSquadMarkerInPositionArrows(platoonID: number, squadID: number) {
     let squadData = data.getSquad(platoonID, squadID);
     // We dont need to update the squad marker if the state didnt change
     if (squadData.isInPositionRenderedState == squadData.isInPosition) { return; }
@@ -226,4 +246,4 @@ function updateSquadMarkerInPositionRender(platoonID: number, squadID: number) {
     }
 }
 
-export { reRenderMapBody, updateSquadMarkerPositions, updateSquadMarker, updateSquadMarkerInPositionRender, updateMapBoxSize, disableRendering, enableRendering, RENDER_MAP }
+export { reRenderMapBody, cleanUpSquadMarker, updatePlatoonColor, updateSquadMarkerPositions, updateSquadMarker, updateSquadMarkerInPositionArrows as updateSquadMarkerInPositionRender, updateMapBoxSize, disableRendering, enableRendering, RENDER_MAP }

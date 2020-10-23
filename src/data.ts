@@ -1,5 +1,5 @@
 import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement } from "./classes";
-import * as color from 'color';
+import * as Color from 'color';
 const Store = require('electron-store');
 const Vue = require("../AAA/vue.js");
 
@@ -111,7 +111,7 @@ class Data {
 
     store: any;
     /** Colors for each platoon. */
-    platColors = [color("#416ACC"), color("#47CCB5"), color("#4FCC3D"), color("#CCBF33"), color("#CC8B2F")];
+    platColors = [Color("#416ACC"), Color("#47CCB5"), Color("#4FCC3D"), Color("#CCBF33"), Color("#CC8B2F")];
 
     loadPlatoonData() {
         // Empty current data

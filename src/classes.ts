@@ -1,4 +1,4 @@
-import * as color from 'color';
+import * as Color from 'color';
 
 interface coord { x: number; y: number; };
 
@@ -22,22 +22,18 @@ enum squadType {
     bastion
 }
 
-
 class platoon {
     squads: squad[];
-    color: string;
-    darkerColor: string;
+
+    lightestColor: string;
     lightColor: string;
+    color: string;
+    darkColor: string;
+    darkestColor: string;
     name: string;
 
-    SetColor(tColor: color) {
-        this.color = tColor.toString();
-        this.darkerColor = tColor.darken(0.5).toString();
-        this.lightColor = tColor.lighten(0.5).toString();
-    }
-    constructor(color: color) {
+    constructor() {
         this.name = "No Name";
-        this.SetColor(color);
         // Alpha, Bravo, Charly, Delta
         this.squads = [];
     }
@@ -99,14 +95,14 @@ interface resolutionSettings {
     resolution: string;
     parent: string;
     detected: string;
-    resolutionScale:number;
+    resolutionScale: number;
     mapBoundingBox: rect;
 }
 
 interface squadMarkerSizeSettings {
-    name : string;
-    radius : number;
-    arrowDistance : number;
+    name: string;
+    radius: number;
+    arrowDistance: number;
 }
 
 

@@ -1,12 +1,14 @@
+import * as Color from 'color';
 import { squad, platoonHTMLElement, platoon, resolutionSettings } from "./classes"
 import { mousePos, dragMovement, dragStartPosition } from "./mouseEventHandler";
 import data from "./data";
 import camera from "./camera";
-
-import { addPlatoon, removePlatoon, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS, restartRendering } from "./UIFunctions";
+import { updatePlatoonColor } from './mapRendering';
+import { addPlatoon, removePlatoon, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS, restartRendering, setPlatoonColor } from "./UIFunctions";
 
 const Vue = require("../AAA/vue.js");
 import Buefy from "buefy";
+
 
 Vue.use(Buefy, {
     defaultIconPack: 'fas',
@@ -42,6 +44,13 @@ function initMousePosBox() {
 }
 initMousePosBox();
 
+function initRightToolBox() {
+    let style = document.getElementById("right-tool-box").style
+    style.position = "absolute";
+    style.top = "200px";
+    style.right = "0px";
+}
+initRightToolBox();
 
 /** Actually updates the html of the mouse debug box */
 function updateMouseDebugBoxHTML() {
@@ -99,6 +108,11 @@ let leftBoxContentApp = new Vue({
             // Platoon Data
             platoons: data.vuePlatoonsObject,
 
+            colorPickOpenIndex: -1,
+            colorPickIsOpen: false,
+            colorHue: 0,
+            colorSat: 0,
+            colorLig: 0,
             settingsDone: true,
             // Data for continents, TODO: be loaded from data instead
             continents: data.vueContinentObject,
@@ -111,41 +125,9 @@ let leftBoxContentApp = new Vue({
             selectedResolutionID: -1,
             autoResolutionTarget: "",
 
-
+            value: 0,
 
             factionSelect: '',
-            // Methods:
-            toggleSquadDelete: function (platoonID: number, squadID: number, event: Event) {
-                if (platoonID >= 0 && squadID >= 0) {
-                    setSquadMarkerDeletedState(platoonID, squadID, true);
-                }
-            },
-
-            toggleSquadArrival: function (platoonID: number, squadID: number, event: Event) {
-                if (platoonID >= 0 && squadID >= 0) {
-                    setSquadMarkerMovingState(platoonID, squadID, true);
-                }
-            },
-
-            openSquad: function (platoonID: number) {
-                this.platoonCardOpen = platoonID;
-            },
-
-            platoonNameChangeDone: function () {
-                data.savePlatoonData();
-            },
-
-            addPlatoon: function () {
-                addPlatoon();
-            },
-
-            removePlatoon: function (id: number) {
-                removePlatoon(id);
-            },
-
-            saveSettings: function () {
-                startRendering()
-            },
 
             autoDetectResolution: function (arr: resolutionSettings[]) {
                 for (let i = 0; i < arr.length; i++) {
@@ -158,25 +140,85 @@ let leftBoxContentApp = new Vue({
 
             getStyleElement: function (platoonData: platoon, squadIndex: number) {
                 let isEmpty = platoonData.squads[squadIndex].isEmpty;
+
+                let lightest = platoonData.lightestColor;
                 let light = platoonData.lightColor;
                 let normal = platoonData.color;
-                let darker = platoonData.darkerColor;
+                let isDark = this.isDark(normal);
+                let darkest = platoonData.darkestColor;
+
+                // If is striped == existing and moving == not empty and not in posiion 
                 if (!platoonData.squads[squadIndex].isInPosition && !isEmpty) {
                     return {
-                        color: darker,
+                        color: 'black',
                         background: `repeating-linear-gradient(45deg, ${light}, ${light} 5px, transparent 5px, transparent 10px)`,
-                        borderColor: isEmpty ? normal : darker
+                        borderColor: darkest
                     }
                 } else {
                     return {
-                        color: darker,
+                        color: (isDark && !isEmpty) ? 'white' : 'black',
                         backgroundColor: isEmpty ? 'transparent' : light,
-                        borderColor: isEmpty ? normal : darker
+                        borderColor: isEmpty ? normal : darkest
                     }
                 }
 
             },
         }
+    },
+    methods: {
+        isDark: function (color: string) {
+            return Color(color).isDark();
+        },
+
+        /** Loads color into the platoon color picker from platoon data */
+        loadColorPicker: function (platoonData: platoon) {
+            let color = Color(platoonData.color);
+            this.colorHue = Math.round(color.hue());
+            this.colorSat = Math.round(color.saturationl());
+            this.colorLig = Math.round(color.lightness());
+        },
+        /** Updates color for platoon based on hue/sat/lig set
+         * also clamps colorHue to [0,360]
+         */
+        updatePlatoonColor: function (platoonData: platoon, platoonID: number) {
+            this.colorHue = (this.colorHue + 360) % 360;
+            let color = Color(`hsl(${this.colorHue},${this.colorSat}%,${this.colorLig}%)`);
+            setPlatoonColor(platoonData, color);
+            updatePlatoonColor(platoonID);
+        },
+
+        toggleSquadDelete: function (platoonID: number, squadID: number, event: Event) {
+            if (platoonID >= 0 && squadID >= 0) {
+                setSquadMarkerDeletedState(platoonID, squadID, true);
+            }
+        },
+
+        toggleSquadArrival: function (platoonID: number, squadID: number, event: Event) {
+            if (platoonID >= 0 && squadID >= 0) {
+                setSquadMarkerMovingState(platoonID, squadID, true);
+            }
+        },
+
+        openSquad: function (platoonID: number) {
+            this.platoonCardOpen = platoonID;
+        },
+
+        platoonNameChangeDone: function () {
+            data.savePlatoonData();
+        },
+
+        addPlatoon: function () {
+            addPlatoon();
+        },
+
+        removePlatoon: function (id: number) {
+            this.platoonCardOpen = -1;
+            removePlatoon(id);
+        },
+
+        saveSettings: function () {
+            startRendering();
+        },
     },
     computed: {
 
@@ -249,9 +291,7 @@ function loadSettingsData() {
         if (data.vueResolutionObject.value[data.resolutionSelectedID].parent !== undefined) {
             leftBoxContentApp.selectedParentResolution = data.vueResolutionObject.value[data.resolutionSelectedID].parent;
         }
-
     }
-
 }
 
 /** Enables rendering and stuff after settings are set */

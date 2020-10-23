@@ -35,8 +35,10 @@
               <b-tab-item label="Platoons" icon="users" v-if="settingsDone" disabled>
                 <div class="container">
                   <b-collapse class="card" animation="slide" v-for="(platoon, index) of platoons.value" :key="index"
-                    :open="platoonCardOpen == index" @open="platoonCardOpen = index">
-                    <div slot="trigger" slot-scope="props" class="card-header" role="button">
+                    :open="platoonCardOpen == index" @open="platoonCardOpen = index;">
+                    <!-- SQUAD CARD HEADER -->
+                    <div slot="trigger" slot-scope="props" class="card-header" role="button"
+                      @click="colorPickIsOpen = false">
                       <p class="card-header-title platoonCardHeaderPlatoonName">
                         {{ platoon.name }}
                       </p>
@@ -52,14 +54,44 @@
                         </b-icon>
                       </a>
                     </div>
+                    <!-- SQUAD CARD CONTENT-->
                     <div class="card-content">
                       <div class="content">
-                        <b-field>
+                        <b-field grouped>
                           <b-input v-model="platoon.name" @blur="platoonNameChangeDone"></b-input>
-                          <p class="control">
-                            <button class="button is-danger" icon-right="trash-alt" @click="removePlatoon(index)">Delete Platoon</button>
-                          </p>
+                          <div class="buttons">
+                            <b-button icon-right="palette" slot="trigger"
+                              @click="colorPickIsOpen = !colorPickIsOpen; loadColorPicker(platoon)"
+                              :style="{backgroundColor: platoon.lightColor, borderColor: platoon.darkerColor, color: isDark(platoon.color) ? 'white' : 'black'}"
+                              :aria-controls="'colorPickElement' + index">
+                            </b-button>
+                            <b-button type="is-danger" icon-right="trash-alt" @click="removePlatoon(index);">
+                              Delete
+                            </b-button>
+                          </div>
                         </b-field>
+                        <b-collapse :aria-id="'colorPickElement' + index" animation="slide" v-model="colorPickIsOpen">
+                          <!-- TODO: Have the fields obey horizontal w/ full label and thin input size -->
+                          <div class="notification">
+                            <b-field horizontal label="Hue">
+                              <b-numberinput size="is-small" v-model="colorHue" controls-position="compact" exponential
+                                @input="updatePlatoonColor(platoon, index)" step="1" expanded>
+                              </b-numberinput>
+                            </b-field>
+
+                            <b-field horizontal label="Saturation">
+                              <b-numberinput size="is-small" v-model="colorSat" controls-position="compact" exponential
+                                @input="updatePlatoonColor(platoon, index)" min="50" max="80" step="1" expanded>
+                              </b-numberinput>
+                            </b-field>
+
+                            <b-field horizontal label="Lightness">
+                              <b-numberinput size="is-small" v-model="colorLig" controls-position="compact" exponential
+                                @input="updatePlatoonColor(platoon, index)" min="40" max="70" step="1" expanded>
+                              </b-numberinput>
+                            </b-field>
+                          </div>
+                        </b-collapse>
                       </div>
                     </div>
                   </b-collapse>
@@ -135,12 +167,18 @@
           </div>
           <!-- Top Buttons -->
         </div>
+
+        <div id="right-tool-box" class="box clickable">
+          CONTENT
+        </div>
       </div>
     </section>
 
 
     <!-- Top Right Corner Debug Display for Focus/Not Focus-->
-    <div id="debugDisplay" class="box"> {{ getText() }}</div>
+    <div id="debugDisplay" class="box">
+      {{ getText() }}
+    </div>
 
 
 
@@ -160,12 +198,12 @@
 
     <!-- Bottom Right Corner, info for mouse position-->
     <div class="container" id="MousePosBox">
-      <div class="columns">
-        <div class="columns"> {{mouseScreenPos}}</div>
-        <div class="columns"> {{mouseMapPos}}</div>
-        <div class="columns"> {{cameraPos}}</div>
-        <div class="columns"> {{zoomFactor}}</div>
-        <div class="columns"> {{drag}}</div>
+      <div class="columns ">
+        <div class="box"> {{mouseScreenPos}}</div>
+        <div class="box"> {{mouseMapPos}}</div>
+        <div class="box"> {{cameraPos}}</div>
+        <div class="box"> {{zoomFactor}}</div>
+        <div class="box"> {{drag}}</div>
       </div>
     </div>
 
