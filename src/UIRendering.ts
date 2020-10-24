@@ -37,7 +37,6 @@ const MousePositionApp = new Vue({
 })
 MousePositionApp.$mount('#MousePosBox')
 
-
 function initMousePosBox() {
     let mpbStyle = document.getElementById("MousePosBox").style
     mpbStyle.bottom = "0px";
@@ -48,8 +47,8 @@ initMousePosBox();
 function initRightToolBox() {
     let style = document.getElementById("right-tool-box").style
     style.position = "absolute";
-    style.top = "200px";
-    style.right = "0px";
+    style.top = "-5px";
+    style.right = "300px";
 }
 initRightToolBox();
 
@@ -69,7 +68,6 @@ function closeContextWindow() {
     menuEle.style.height = "0px";
     setTimeout(function () { menuEle.style.left = "-1000px"; menuEle.style.top = "-1000px"; }, 50);
 }
-
 
 /** Opens the Context Menu for an element */
 function openSquadContextWindow(e: MouseEvent) {
