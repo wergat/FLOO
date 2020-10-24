@@ -7,8 +7,31 @@ interface rect {
     bottomRight: { x: number, y: number }
 }
 
-interface platoonHTMLElement extends HTMLElement {
+interface draggableHTMLElement extends HTMLElement {
+    isSquad: boolean;
+}
+
+interface platoonHTMLElement extends draggableHTMLElement {
     platoon: number; squad: number;
+}
+
+interface mapMarkerHTMLElement extends draggableHTMLElement {
+    mapMarkerID: number;
+}
+
+enum Faction {
+    NC, TR, VS
+}
+
+enum MapMarkerType {
+    Colossus, Flyer, AATank
+}
+
+class MapMarker {
+    pos: coord;
+    faction: Faction;
+    type: MapMarkerType;
+    isRendered: boolean;
 }
 
 /**
@@ -106,4 +129,7 @@ interface squadMarkerSizeSettings {
 }
 
 
-export { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement, squadMarkerSizeSettings }
+export {
+    coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement,
+    draggableHTMLElement, squadMarkerSizeSettings, Faction, MapMarkerType, MapMarker, mapMarkerHTMLElement
+}

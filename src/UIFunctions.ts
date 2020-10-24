@@ -32,14 +32,14 @@ function addPlatoon() {
         let found = false;
         let compareHue = 0;
         let distance = 0;
-        while(!found){
+        while (!found) {
             found = true;
             hue = Math.random() * 360;
             freedom--;
-            for(let i = 0; i < platoonNumber; i++){
+            for (let i = 0; i < platoonNumber; i++) {
                 compareHue = Color(data.getPlatoon(i).color).hue();
-                distance = Math.abs(( hue - compareHue + 180 + 360) % 360 - 180);
-                if(distance < freedom){
+                distance = Math.abs((hue - compareHue + 180 + 360) % 360 - 180);
+                if (distance < freedom) {
                     found = false;
                     break;
                 }
@@ -120,6 +120,7 @@ function updateMapIfDragged() {
     if (didDragMap) {
         // Update all squad markers with updated camera position
         mapRendering.updateSquadMarkerPositions();
+        mapRendering.updateMapMarkerPositions();
         didDragMap = false;
     }
 }
@@ -200,5 +201,9 @@ function restartRendering() {
     mapRendering.updateSquadMarkerPositions();
 }
 
-
-export { addPlatoon, setPlatoonColor, removePlatoon, restartRendering, updateMapIfDragged, setWindowsFocus, setMapAsDragged, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS }
+export {
+    addPlatoon, setPlatoonColor, removePlatoon, restartRendering,
+    updateMapIfDragged, setWindowsFocus, setMapAsDragged,
+    setSquadMarkerDeletedState, setSquadMarkerMovingState,
+    FOCUS
+}

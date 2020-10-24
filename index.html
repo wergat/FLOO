@@ -18,199 +18,201 @@
 
 <body>
 
-  <body>
-    <!-- Everything rendered on ingame map goes in here-->
-    <section>
-      <div id="mapBody" class="normalMarker"></div>
-    </section>
-    <!-- All UI goes here-->
-    <section>
-      <div id="UI">
-        <!-- Box on the left -->
-        <div id="left-bounding-box" class="box clickable">
-          <!-- Platoon List Stuff -->
-          <div class="container">
-            <b-tabs v-model="activeContentTab" id="leftBoxContentApp" expanded type="is-toggle">
-              <!-- TODO: disable not working, workaround: done-->
-              <b-tab-item label="Platoons" icon="users" v-if="settingsDone" disabled>
-                <div class="container">
-                  <b-collapse class="card" animation="slide" v-for="(platoon, index) of platoons.value" :key="index"
-                    :open="platoonCardOpen == index" @open="platoonCardOpen = index;">
-                    <!-- SQUAD CARD HEADER -->
-                    <div slot="trigger" slot-scope="props" class="card-header" role="button"
-                      @click="colorPickIsOpen = false">
-                      <p class="card-header-title platoonCardHeaderPlatoonName">
-                        {{ platoon.name }}
-                      </p>
-                      <!-- TODO: Turn this into a for loop and a template (?)-->
-                      <b-button v-for="(letter, squadIndex) in ['A','B','C','D']"
-                        @click.ctrl.stop="toggleSquadDelete(index, squadIndex)"
-                        @click.shift.stop="toggleSquadArrival(index, squadIndex)"
-                        v-bind:style="getStyleElement(platoon,squadIndex)" class="m-1">
-                        {{ letter }}
-                      </b-button>
-                      <a class="card-header-icon">
-                        <b-icon :icon="props.open ? 'menu-down' : 'menu-up'">
-                        </b-icon>
-                      </a>
-                    </div>
-                    <!-- SQUAD CARD CONTENT-->
-                    <div class="card-content">
-                      <div class="content">
-                        <b-field grouped>
-                          <b-input v-model="platoon.name" @blur="platoonNameChangeDone"></b-input>
-                          <div class="buttons">
-                            <b-button icon-right="palette" slot="trigger"
-                              @click="colorPickIsOpen = !colorPickIsOpen; loadColorPicker(platoon)"
-                              :style="{backgroundColor: platoon.lightColor, borderColor: platoon.darkerColor, color: isDark(platoon.color) ? 'white' : 'black'}"
-                              :aria-controls="'colorPickElement' + index">
-                            </b-button>
-                            <b-button type="is-danger" icon-right="trash-alt" @click="removePlatoon(index);">
-                              Delete
-                            </b-button>
-                          </div>
-                        </b-field>
-                        <b-collapse :aria-id="'colorPickElement' + index" animation="slide" v-model="colorPickIsOpen">
-                          <!-- TODO: Have the fields obey horizontal w/ full label and thin input size -->
-                          <div class="notification">
-                            <b-field horizontal label="Hue">
-                              <b-numberinput size="is-small" v-model="colorHue" controls-position="compact" exponential
-                                @input="updatePlatoonColor(platoon, index)" step="1" expanded>
-                              </b-numberinput>
-                            </b-field>
-
-                            <b-field horizontal label="Saturation">
-                              <b-numberinput size="is-small" v-model="colorSat" controls-position="compact" exponential
-                                @input="updatePlatoonColor(platoon, index)" min="50" max="80" step="1" expanded>
-                              </b-numberinput>
-                            </b-field>
-
-                            <b-field horizontal label="Lightness">
-                              <b-numberinput size="is-small" v-model="colorLig" controls-position="compact" exponential
-                                @input="updatePlatoonColor(platoon, index)" min="40" max="70" step="1" expanded>
-                              </b-numberinput>
-                            </b-field>
-                          </div>
-                        </b-collapse>
-                      </div>
-                    </div>
-                  </b-collapse>
-                  <div class="container">
-                    <div id="leftBoxNavigation" class="level">
-                      <div class="level-left">
-                        <b-button type="is-success" @click="addPlatoon" v-if="activeContentTab == 0">
-                          <b-icon icon="plus"></b-icon>
-                        </b-button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </b-tab-item>
-              <b-tab-item label="Settings" icon="wrench">
-                <div class="container">
-                  <b-progress :value="getSettingsProgress"
-                    :type="getSettingsProgress == 100 ? 'is-success' : 'is-primary'"></b-progress>
-                  <b-field :type="isWarpgateAndContinentOkay ? 'is-success' : 'is-danger'">
-                    <!-- TODO: placeholder="Continent" not working, workaround: ??? make color on a per-field basis? -->
-                    <b-select placeholder="Country" icon="globe" v-model="continentSelectedID" expanded>
-                      <option v-for="continent in continents.value" :key="continent.id" :value="continent.id">
-                        {{ continent.name }}
-                      </option>
-                    </b-select>
-                    <!-- TODO: placeholder="[Anything]" not working, workaround: ??? make color on a per-field basis?-->
-                    <b-select placeholder="'Select a Warpgate'" :disabled="continentSelectedID < 0"
-                      v-model="warpgateSelectedID" expanded>
-                      <option v-for="warpgate in getWarpgates" :key="warpgate.id" :value="warpgate.id">
-                        {{ warpgate.name }}
-                      </option>
-                    </b-select>
-                  </b-field>
-
-                  <b-field :type="isResolutionOkay ? 'is-success' : 'is-danger'">
-                    <!-- TODO: placeholder="REEEsolution" not working, workaround: ??? -->
-                    <b-select placeholder="REEEsolution" icon="desktop" v-model="selectedParentResolution" expanded>
-                      <option v-for="resolution in getSupportedParentResolutions" :key="resolution.id"
-                        :value="resolution.name">
-                        {{ resolution.name }}
-                      </option>
-                    </b-select>
-                    <b-select placeholder="REEEsolution2ElectronBoogaloo" icon="desktop" v-model="selectedResolutionID"
-                      expanded :disabled="selectedParentResolution.length == 0">
-                      <option v-for="resolution in getSupportedResolutions" :key="resolution.id" :value="resolution.id">
-                        {{ resolution.name }}
-                      </option>
-                    </b-select>
-                    <p class="control">
-                      <b-button type="is-warning" @click="autoDetectResolution(resolutions.value)">Auto</b-button>
+  <!-- Everything rendered on ingame map goes in here-->
+  <section>
+    <div id="mapBody" class="normalMarker"></div>
+  </section>
+  <!-- All UI goes here-->
+  <section>
+    <div id="UI">
+      <!-- Box on the left -->
+      <div id="left-bounding-box" class="box clickable">
+        <!-- Platoon List Stuff -->
+        <div class="container">
+          <b-tabs v-model="activeContentTab" id="leftBoxContentApp" expanded type="is-toggle">
+            <!-- TODO: disable not working, workaround: done-->
+            <b-tab-item label="Platoons" icon="users" v-if="settingsDone" disabled>
+              <div class="container">
+                <b-collapse class="card" animation="slide" v-for="(platoon, index) of platoons.value" :key="index"
+                  :open="platoonCardOpen == index" @open="platoonCardOpen = index;">
+                  <!-- SQUAD CARD HEADER -->
+                  <div slot="trigger" slot-scope="props" class="card-header" role="button"
+                    @click="colorPickIsOpen = false">
+                    <p class="card-header-title platoonCardHeaderPlatoonName">
+                      {{ platoon.name }}
                     </p>
-                  </b-field>
-                  <!-- TODO: WHHAAAT DEEE FUUUUC -->
-                  <b-field>
-                    <b-radio-button v-model="factionSelect" native-value="VS" expanded>
-                      VS
-                    </b-radio-button>
-                    <b-radio-button v-model="factionSelect" native-value="TR" expanded>
-                      TR
-                    </b-radio-button>
-                    <b-radio-button v-model="factionSelect" native-value="NC" expanded>
-                      NC
-                    </b-radio-button>
-                  </b-field>
-                  <div class="buttons">
-                    <b-button class="button is-danger" icon-left="times">Exit</b-button>
-                    <b-button class="button is-success" icon-right="save" :disabled="getSettingsProgress < 100"
-                      @click="saveSettings()">Save</b-button>
+                    <!-- TODO: Turn this into a for loop and a template (?)-->
+                    <b-button v-for="(letter, squadIndex) in ['A','B','C','D']"
+                      @click.ctrl.stop="toggleSquadDelete(index, squadIndex)"
+                      @click.shift.stop="toggleSquadArrival(index, squadIndex)"
+                      v-bind:style="getStyleElement(platoon,squadIndex)" class="m-1">
+                      {{ letter }}
+                    </b-button>
+                    <a class="card-header-icon">
+                      <b-icon :icon="props.open ? 'menu-down' : 'menu-up'">
+                      </b-icon>
+                    </a>
+                  </div>
+                  <!-- SQUAD CARD CONTENT-->
+                  <div class="card-content">
+                    <div class="content">
+                      <b-field grouped>
+                        <b-input v-model="platoon.name" @blur="platoonNameChangeDone"></b-input>
+                        <div class="buttons">
+                          <b-button icon-right="palette" slot="trigger"
+                            @click="colorPickIsOpen = !colorPickIsOpen; loadColorPicker(platoon)"
+                            :style="{backgroundColor: platoon.lightColor, borderColor: platoon.darkerColor, color: isDark(platoon.color) ? 'white' : 'black'}"
+                            :aria-controls="'colorPickElement' + index">
+                          </b-button>
+                          <b-button type="is-danger" icon-right="trash-alt" @click="removePlatoon(index);">
+                            Delete
+                          </b-button>
+                        </div>
+                      </b-field>
+                      <b-collapse :aria-id="'colorPickElement' + index" animation="slide" v-model="colorPickIsOpen">
+                        <!-- TODO: Have the fields obey horizontal w/ full label and thin input size -->
+                        <div class="notification">
+                          <b-field horizontal label="Hue">
+                            <b-numberinput size="is-small" v-model="colorHue" controls-position="compact" exponential
+                              @input="updatePlatoonColor(platoon, index)" step="1" expanded>
+                            </b-numberinput>
+                          </b-field>
+
+                          <b-field horizontal label="Saturation">
+                            <b-numberinput size="is-small" v-model="colorSat" controls-position="compact" exponential
+                              @input="updatePlatoonColor(platoon, index)" min="50" max="80" step="1" expanded>
+                            </b-numberinput>
+                          </b-field>
+
+                          <b-field horizontal label="Lightness">
+                            <b-numberinput size="is-small" v-model="colorLig" controls-position="compact" exponential
+                              @input="updatePlatoonColor(platoon, index)" min="40" max="70" step="1" expanded>
+                            </b-numberinput>
+                          </b-field>
+                        </div>
+                      </b-collapse>
+                    </div>
+                  </div>
+                </b-collapse>
+                <div class="container">
+                  <div id="leftBoxNavigation" class="level">
+                    <div class="level-left">
+                      <b-button type="is-success" @click="addPlatoon" v-if="activeContentTab == 0">
+                        <b-icon icon="plus"></b-icon>
+                      </b-button>
+                    </div>
                   </div>
                 </div>
-              </b-tab-item>
-            </b-tabs>
-          </div>
-          <!-- Top Buttons -->
+              </div>
+            </b-tab-item>
+            <b-tab-item label="Settings" icon="wrench">
+              <div class="container">
+                <b-progress :value="getSettingsProgress"
+                  :type="getSettingsProgress == 100 ? 'is-success' : 'is-primary'"></b-progress>
+                <b-field :type="isWarpgateAndContinentOkay ? 'is-success' : 'is-danger'">
+                  <!-- TODO: placeholder="Continent" not working, workaround: ??? make color on a per-field basis? -->
+                  <b-select placeholder="Country" icon="globe" v-model="continentSelectedID" expanded>
+                    <option v-for="continent in continents.value" :key="continent.id" :value="continent.id">
+                      {{ continent.name }}
+                    </option>
+                  </b-select>
+                  <!-- TODO: placeholder="[Anything]" not working, workaround: ??? make color on a per-field basis?-->
+                  <b-select placeholder="'Select a Warpgate'" :disabled="continentSelectedID < 0"
+                    v-model="warpgateSelectedID" expanded>
+                    <option v-for="warpgate in getWarpgates" :key="warpgate.id" :value="warpgate.id">
+                      {{ warpgate.name }}
+                    </option>
+                  </b-select>
+                </b-field>
+
+                <b-field :type="isResolutionOkay ? 'is-success' : 'is-danger'">
+                  <!-- TODO: placeholder="REEEsolution" not working, workaround: ??? -->
+                  <b-select placeholder="REEEsolution" icon="desktop" v-model="selectedParentResolution" expanded>
+                    <option v-for="resolution in getSupportedParentResolutions" :key="resolution.id"
+                      :value="resolution.name">
+                      {{ resolution.name }}
+                    </option>
+                  </b-select>
+                  <b-select placeholder="REEEsolution2ElectronBoogaloo" icon="desktop" v-model="selectedResolutionID"
+                    expanded :disabled="selectedParentResolution.length == 0">
+                    <option v-for="resolution in getSupportedResolutions" :key="resolution.id" :value="resolution.id">
+                      {{ resolution.name }}
+                    </option>
+                  </b-select>
+                  <p class="control">
+                    <b-button type="is-warning" @click="autoDetectResolution(resolutions.value)">Auto</b-button>
+                  </p>
+                </b-field>
+                <!-- TODO: WHHAAAT DEEE FUUUUC -->
+                <b-field>
+                  <b-radio-button v-model="factionSelect" native-value="VS" expanded>
+                    VS
+                  </b-radio-button>
+                  <b-radio-button v-model="factionSelect" native-value="TR" expanded>
+                    TR
+                  </b-radio-button>
+                  <b-radio-button v-model="factionSelect" native-value="NC" expanded>
+                    NC
+                  </b-radio-button>
+                </b-field>
+                <div class="buttons">
+                  <b-button class="button is-danger" icon-left="times">Exit</b-button>
+                  <b-button class="button is-success" icon-right="save" :disabled="getSettingsProgress < 100"
+                    @click="saveSettings()">Save</b-button>
+                </div>
+              </div>
+            </b-tab-item>
+          </b-tabs>
         </div>
-
-        <div id="right-tool-box" class="box clickable">
-          CONTENT
-        </div>
+        <!-- Top Buttons -->
       </div>
-    </section>
 
+      <div id="right-tool-box" class="box clickable" v-show="render">
+        <b-field grouped v-for="(factionName,factionID) in ['NC','TR','VS']">
+          <b-button v-for="(typeName,typeID) in ['Colossus','Flyer','AATank','Base']" @click="addToMap(factionID,typeID)"><img
+              :src="getPathToPic(factionName,typeName)"></b-button>
+        </b-field>
 
-    <!-- Top Right Corner Debug Display for Focus/Not Focus-->
-    <div id="debugDisplay" class="box">
-      {{ getText() }}
-    </div>
-
-
-
-
-
-    <!-- Context Menu-->
-    <div id="contextMenu" class="clickable">
-      <div class="tooltip">
-        <img src="img/backToWarpgate.png" class="tooltip" id="sendToWarpgateButton">
-        <span class="tooltiptext">Send squad back to warpgate</span>
-      </div>
-      <div class="tooltip">
-        <img src="img/delete.png" id="deleteSquadButton">
-        <span class="tooltiptext">Delete Squad</span>
       </div>
     </div>
+  </section>
 
-    <!-- Bottom Right Corner, info for mouse position-->
-    <div class="container" id="MousePosBox">
-      <div class="columns ">
-        <div class="box"> {{mouseScreenPos}}</div>
-        <div class="box"> {{mouseMapPos}}</div>
-        <div class="box"> {{cameraPos}}</div>
-        <div class="box"> {{zoomFactor}}</div>
-        <div class="box"> {{drag}}</div>
-      </div>
+
+  <!-- Top Right Corner Debug Display for Focus/Not Focus-->
+  <div id="debugDisplay" class="box" v-if="render">
+    {{ getText() }}
+  </div>
+
+
+
+
+
+  <!-- Context Menu-->
+  <div id="contextMenu" class="clickable">
+    <div class="tooltip">
+      <img src="img/backToWarpgate.png" class="tooltip" id="sendToWarpgateButton">
+      <span class="tooltiptext">Send squad back to warpgate</span>
     </div>
+    <div class="tooltip">
+      <img src="img/delete.png" id="deleteSquadButton">
+      <span class="tooltiptext">Delete Squad</span>
+    </div>
+  </div>
+
+  <!-- Bottom Right Corner, info for mouse position-->
+  <div class="container" id="MousePosBox">
+    <div class="columns" v-if="render">
+      <div class="box"> {{mouseScreenPos}}</div>
+      <div class="box"> {{mouseMapPos}}</div>
+      <div class="box"> {{cameraPos}}</div>
+      <div class="box"> {{zoomFactor}}</div>
+      <div class="box"> {{drag}}</div>
+    </div>
+  </div>
 
 
-    <!-- Wait for everything to exist, then load the scripts -->
-    <script> require("./dist/renderer.js")</script>
-  </body>
+  <!-- Wait for everything to exist, then load the scripts -->
+  <script> require("./dist/renderer.js")</script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement } from "./classes";
+import { coord, rect, platoon, squad, warpgate, continent, resolutionSettings, platoonHTMLElement, MapMarker } from "./classes";
 import * as Color from 'color';
 const Store = require('electron-store');
 const Vue = require("../AAA/vue.js");
@@ -7,7 +7,8 @@ const Vue = require("../AAA/vue.js");
 const settingsStore = new Store({ name: 'config' });
 /** Used to store data about each platoon in case of restart etc. */
 const platoonStore = new Store({ name: 'platoons' });
-
+/** map markers */
+const mapMarkerStore = new Store({ name: 'mapMarkers' });
 /** IDK if there is a way to properly import this, so instead i just hardcoded it 
      * imports and returns continent data
     */
@@ -109,9 +110,10 @@ class Data {
         } else { console.warn("Warpgate ID set to undefined"); }
     }
 
-    store: any;
     /** Colors for each platoon. */
     platColors = [Color("#416ACC"), Color("#47CCB5"), Color("#4FCC3D"), Color("#CCBF33"), Color("#CC8B2F")];
+    /** Markers for stuff that arent squad (e.g. enenmy colossus) */
+    markers = new Array<MapMarker>()
 
     loadPlatoonData() {
         // Empty current data
@@ -122,6 +124,23 @@ class Data {
             this.vuePlatoonsObject.value.push(platData as platoon);
             i++;
         }
+    }
+
+    loadMarkerData(){
+        let i = 0;
+        let markerData;
+        while (markerData = mapMarkerStore.store[i]) {
+            this.markers.push(markerData as MapMarker);
+            this.markers[i].pos = {
+                x : markerData.pos.x,
+                y: markerData.pos.y
+            }
+            i++;
+        }
+    }
+
+    saveMapMarkerData(){
+        mapMarkerStore.store = this.markers;
     }
 
     loadSavedSettings(): boolean {
@@ -151,11 +170,20 @@ class Data {
         this.vueContinentObject.value = importContinentData(require("../ContinentData.json"));
         this.vueResolutionObject.value = importResolutionSettings(require("../resolutionSettings.json"));
 
-        this.store = platoonStore.store;
-        // Load platoon data from file
+        
+        // Load saved data from file
         this.loadPlatoonData();
+        this.loadMarkerData()
+    }
 
 
+    /** Adds a marker for position pos to the list of markers */
+    addMapMarker(pos: coord, faction: number, type: number) {
+        let marker = new MapMarker();
+        marker.faction = faction;
+        marker.pos = pos;
+        marker.type = type;
+        this.markers.push(marker);
     }
 
     /** Returns squad s in platoon p from saved platoon list

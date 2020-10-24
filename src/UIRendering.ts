@@ -3,7 +3,7 @@ import { squad, platoonHTMLElement, platoon, resolutionSettings } from "./classe
 import { mousePos, dragMovement, dragStartPosition } from "./mouseEventHandler";
 import data from "./data";
 import camera from "./camera";
-import { updatePlatoonColor } from './mapRendering';
+import { updatePlatoonColor, updateMapMarkerPositions, reRenderMapBody } from './mapRendering';
 import { addPlatoon, removePlatoon, setSquadMarkerDeletedState, setSquadMarkerMovingState, FOCUS, restartRendering, setPlatoonColor } from "./UIFunctions";
 
 const Vue = require("../AAA/vue.js");
@@ -30,7 +30,8 @@ const MousePositionApp = new Vue({
             mouseMapPos: "",
             cameraPos: "",
             zoomFactor: "",
-            drag: ""
+            drag: "",
+            render: false
         }
     }
 })
@@ -85,13 +86,36 @@ let app = new Vue({
     el: "#debugDisplay",
     data() {
         return {
-            isFocused: false
+            isFocused: false,
+            render: false
         }
     },
     methods: {
         getText(): string {
             return FOCUS.value ? "Focused" : "Unfocsued";
         }
+    }
+});
+
+
+let rightToolBoxApp = new Vue({
+    el: '#right-tool-box',
+    data() {
+        return {
+            render : false
+        }
+    },
+    methods: {
+        getPathToPic(faction: string, type: string) {
+            return `./img/${faction}${type}.png`;
+        },
+        addToMap(faction: number, type: number) {
+            let cameraPos = camera.getCurrentPosition();
+            let centerCamPos = { x: cameraPos.x + (camera.mapRenderSize.x / 2), y: cameraPos.y + (camera.mapRenderSize.y / 2) };
+            data.addMapMarker(centerCamPos, faction, type);
+            reRenderMapBody();
+        }
+
     }
 });
 
@@ -302,6 +326,8 @@ function startRendering() {
     data.warpgateSelectedID = leftBoxContentApp.warpgateSelectedID;
 
     restartRendering();
+
+    rightToolBoxApp.render = true;
 
     // Mark settings as being completed, yay. Platoons can now be accessed/edited
     leftBoxContentApp.settingsDone = true;

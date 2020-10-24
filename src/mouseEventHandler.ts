@@ -1,4 +1,4 @@
-import { coord, platoonHTMLElement, squad } from "./classes"
+import { coord, platoonHTMLElement, draggableHTMLElement, mapMarkerHTMLElement } from "./classes"
 import camera from "./camera";
 import * as UI from "./UI";
 import * as UIRendering from "./UIRendering";
@@ -126,6 +126,7 @@ function handleMouseWheel(message: any) {
         camera.clampCameraPosition();
         // Update squad marker position
         mapRendering.updateSquadMarkerPositions();
+        mapRendering.updateMapMarkerPositions();
         // Update the UI
         UI.updateZoomLevel();
     }
@@ -133,12 +134,11 @@ function handleMouseWheel(message: any) {
 
 
 /** Makes an element (squadmarker) dragable by adding mouse events to the squad marker*/
-function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
+function makeSquadMarkerDragAble(dragEle: draggableHTMLElement) {
     let deltaMove = { x: 0, y: 0 };
     let lastPos = { x: 0, y: 0 };
     let startPos = { x: 0, y: 0 }
-    squadMarker.onmousedown = startElementDrag;
-    let isDraggingThisElement = false;
+    dragEle.onmousedown = startElementDrag;
 
     function startElementDrag(e: MouseEvent) {
         e.preventDefault();
@@ -152,9 +152,6 @@ function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
         // Capture mouseup and mouse move events for the whole document while we are at it.
         document.onmouseup = endElementDrag;
         document.onmousemove = elementDrag;
-
-        // Lets start dragging this element, not the map.
-        isDraggingThisElement = true;
 
         // Close context menu if it is open
         if (contextMenuOpen) {
@@ -173,8 +170,8 @@ function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
         lastPos.y = e.clientY;
 
         // Update Element position
-        squadMarker.style.left = (squadMarker.offsetLeft - deltaMove.x) + "px";
-        squadMarker.style.top = (squadMarker.offsetTop - deltaMove.y) + "px";
+        dragEle.style.left = (dragEle.offsetLeft - deltaMove.x) + "px";
+        dragEle.style.top = (dragEle.offsetTop - deltaMove.y) + "px";
     }
 
     function endElementDrag(event: MouseEvent) {
@@ -185,16 +182,20 @@ function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
         document.onmousemove = null;
         let cameraPos = camera.getCurrentPosition();
         // Update the position to the saved data to make sure the position stays fixed when map gets moved/zoomed in
-        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.x = camera.zoomFactor * (squadMarker.offsetLeft - deltaMove.x + squadMarkerSize) + cameraPos.x;
-        data.getSquad(squadMarker.platoon, squadMarker.squad).pos.y = camera.zoomFactor * (squadMarker.offsetTop - deltaMove.y + squadMarkerSize) + cameraPos.y;
-        // We aint dragging anymore, free up the map movement
-        isDraggingThisElement = false;
-        // Check if we dragged it all. If we didnt drag, then it was a click instead, so handle the event as a click instead
-        if (lastPos.x - startPos.x == 0 && lastPos.y - startPos.y == 0) {
-            handleSquadMarkerClick(event);
+        if (dragEle.isSquad) {
+            data.getSquad((dragEle as platoonHTMLElement).platoon, (dragEle as platoonHTMLElement).squad).pos.x = camera.zoomFactor * (dragEle.offsetLeft - deltaMove.x + squadMarkerSize) + cameraPos.x;
+            data.getSquad((dragEle as platoonHTMLElement).platoon, (dragEle as platoonHTMLElement).squad).pos.y = camera.zoomFactor * (dragEle.offsetTop - deltaMove.y + squadMarkerSize) + cameraPos.y;
+            // Check if we dragged it all. If we didnt drag, then it was a click instead, so handle the event as a click instead
+            if (lastPos.x - startPos.x == 0 && lastPos.y - startPos.y == 0) {
+                handleSquadMarkerClick(event);
+            } else {
+                // If shift is pressed, set the squad marker to inPosiion, otherwise auto-set it to not in position
+                handleSquadMarkerClick(event, false, event.shiftKey);
+            }
         } else {
-            // If shift is pressed, set the squad marker to inPosiion, otherwise auto-set it to not in position
-            handleSquadMarkerClick(event, false, event.shiftKey);
+            data.markers[(dragEle as mapMarkerHTMLElement).mapMarkerID].pos.x = camera.zoomFactor * (dragEle.offsetLeft - deltaMove.x + squadMarkerSize) + cameraPos.x;
+            data.markers[(dragEle as mapMarkerHTMLElement).mapMarkerID].pos.y = camera.zoomFactor * (dragEle.offsetTop - deltaMove.y + squadMarkerSize) + cameraPos.y;
+            data.saveMapMarkerData();
         }
     }
 }
@@ -204,7 +205,6 @@ function makeSquadMarkerDragAble(squadMarker: platoonHTMLElement) {
  * 
 */
 function handleSquadMarkerEvent(event: MouseEvent) {
-    console.log(event);
     switch (event.button) {
         // Left clicks get handled by makeSquadMarkerDraggable
         case 2: // Right click/ context menu
@@ -216,6 +216,30 @@ function handleSquadMarkerEvent(event: MouseEvent) {
     }
 }
 
+function getMapMarkerParentsID(ele: mapMarkerHTMLElement): mapMarkerHTMLElement {
+    while (!ele.classList.contains("mapMarker")) {
+        // IDK how this would happen, but saftey first
+        if (ele.parentElement == null) {
+            throw new Error("Element not squad marker or child of squad marker");
+        }
+        ele = ele.parentElement as mapMarkerHTMLElement;
+    }
+    return ele;
+}
+
+function handleMapMarkerEvent(event: MouseEvent) {
+    switch (event.button) {
+        // Left clicks get handled by makeSquadMarkerDraggable
+        case 2: // Right click = delte this
+            let ele = getMapMarkerParentsID(event.target as mapMarkerHTMLElement);
+            data.markers.splice(ele.mapMarkerID, 1);
+            data.saveMapMarkerData();
+            ele.parentNode.removeChild(ele);
+            mapRendering.reRenderMapMarkers();
+            break;
+        default: break;
+    }
+}
 
 /**
  * Left click on squad marker to indicate squad is moving to that position
@@ -294,4 +318,4 @@ function setDropdownMenuButtons() {
 
 setDropdownMenuButtons();
 
-export { handleRendererMouseEvent, makeSquadMarkerDragAble, handleSquadMarkerEvent, mousePos, dragMovement, dragStartPosition }
+export { handleRendererMouseEvent, makeSquadMarkerDragAble, handleSquadMarkerEvent, handleMapMarkerEvent, mousePos, dragMovement, dragStartPosition }

@@ -57,6 +57,24 @@ body {
   position: fixed;
 }
 
+.mapMarker {
+  border-radius: 20px;
+  border: 2px solid black;
+  cursor: pointer;
+  position: fixed;
+  height: 40px;
+  width: 40px;
+  background-color: white;
+}
+
+.mapMarker img {
+  width: 25px;
+  height: 25px;
+  position: relative;
+  top: 5px;
+  left: 5px;
+}
+
 .squadMarker {
   border-radius: 20px;
   border: 2px solid black;
