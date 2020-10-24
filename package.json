@@ -1,6 +1,6 @@
 {
   "name": "FLOO",
-  "version": "0.3.0",
+  "version": "0.3.1-beta",
   "main": "dist/main.js",
   "description": "Force Lead Organizing OwOrlay",
   "scripts": {
