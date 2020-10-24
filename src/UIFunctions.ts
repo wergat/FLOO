@@ -184,9 +184,9 @@ function setSquadMarkerMovingState(platoonID: number, squadID: number, toggle = 
 /** Restarts the rendering after updating all the needed information for camera etc. */
 function restartRendering() {
     // set new vars for camera and bounding box
-    camera.setScreenSpaceCorners(data.vueResolutionObject.value[data.resolutionSelectedID].mapBoundingBox);
-    camera.setContinentSize(data.getCurrentContinent().mapBoxSize.x, data.getCurrentContinent().mapBoxSize.y);
-    camera.resolutionScaleFactor = data.vueResolutionObject.value[data.resolutionSelectedID].resolutionScale;
+    camera.setScreenSpaceCorners(data.getCurrentResolution().mapBoundingBox);
+    camera.setContinentSize(data.getCurrentResolution().mapSize.x, data.getCurrentResolution().mapSize.y);
+    camera.resolutionScaleFactor = data.getCurrentResolution().resolutionScale;
 
     mapRendering.updateMapBoxSize();
 

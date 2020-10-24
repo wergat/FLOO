@@ -102,7 +102,7 @@ let rightToolBoxApp = new Vue({
     el: '#right-tool-box',
     data() {
         return {
-            render : false
+            render: false
         }
     },
     methods: {
@@ -311,9 +311,10 @@ function loadSettingsData() {
     leftBoxContentApp.selectedResolutionID = data.resolutionSelectedID;
     leftBoxContentApp.continentSelectedID = data.continentSelectedID;
     leftBoxContentApp.warpgateSelectedID = data.warpgateSelectedID;
-    if (data.vueResolutionObject.value[data.resolutionSelectedID] !== undefined) {
-        if (data.vueResolutionObject.value[data.resolutionSelectedID].parent !== undefined) {
-            leftBoxContentApp.selectedParentResolution = data.vueResolutionObject.value[data.resolutionSelectedID].parent;
+    let res = data.getCurrentResolution();
+    if (res !== undefined) {
+        if (res.parent !== undefined) {
+            leftBoxContentApp.selectedParentResolution = res.parent;
         }
     }
 }

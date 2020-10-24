@@ -108,6 +108,7 @@ interface warpgate {
 interface continent {
     name: string;
     id: number;
+    /** DONT USE THIS FOR NOW. TODO:FIND OUT WHY CONTINENT SIZE IS DIFFERENT DEPENDING ON RESOLUTION */
     mapBoxSize: coord;
     UIColor: { primary: string, secondary: string };
     warpgates: warpgate[];
@@ -120,6 +121,7 @@ interface resolutionSettings {
     detected: string;
     resolutionScale: number;
     mapBoundingBox: rect;
+    mapSize: coord;
 }
 
 interface squadMarkerSizeSettings {

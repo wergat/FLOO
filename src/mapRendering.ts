@@ -197,8 +197,8 @@ function updatePlatoonColor(platoonID: number) {
 }
 
 function updateMapBoxSize() {
-    cached_mapBoxSizeX = data.getCurrentContinent().mapBoxSize.x;
-    cached_mapBoxSizeY = data.getCurrentContinent().mapBoxSize.y;
+    cached_mapBoxSizeX = data.getCurrentResolution().mapSize.x;
+    cached_mapBoxSizeY = data.getCurrentResolution().mapSize.y;
 }
 
 function updateMapMarkerPositions() {

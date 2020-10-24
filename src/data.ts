@@ -48,6 +48,7 @@ function importResolutionSettings(data: any): resolutionSettings[] {
                 topLeft: { x: data[i].mapBoundingBox.topLeft.x, y: data[i].mapBoundingBox.topLeft.y },
                 bottomRight: { x: data[i].mapBoundingBox.bottomRight.x, y: data[i].mapBoundingBox.bottomRight.y }
             },
+            mapSize : {x : data[i].mapSize.x, y: data[i].mapSize.y}
         }
     }
     return resolutionData;
@@ -215,6 +216,10 @@ class Data {
     /** Returns the currently selected warpgate as object*/
     getCurrentWarpgate(): warpgate {
         return this.getCurrentContinent().warpgates[this.warpgateSelectedID];
+    }
+
+    getCurrentResolution() : resolutionSettings {
+        return this.vueResolutionObject.value[this.resolutionSelectedID];
     }
 
     /** Returns a random position near the warpgate that is not near any other squad marker right now */
