@@ -12,8 +12,8 @@ Some things the user has to keep in mind when using this tool, as they will caus
 * After clicking on any UI element, click on anything ingame before dragging the ingame map around again.
 
 Currently supported resolutions: 
+* 1920x1080
 * 2560x1440
 
 
 iohook and active-win dependency sucks, but electron 8.5.2 and node v10.22.1 versions seems to work.
-
