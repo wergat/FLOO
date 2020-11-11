@@ -13,12 +13,6 @@ body {
 
 /* UI */
 
-#left-bounding-box {
-  position: absolute;
-  left: 0;
-  top: 400px;
-  width: 500px;
-}
 
 #contextMenu {
   position: fixed;

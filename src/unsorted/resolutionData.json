@@ -1,9 +1,18 @@
 [
     {
         "id": 0,
-        "resolution": "2560x1377",
-        "parent": "2560x1440",
-        "detected": "2560x1400",
+        "resolution": {
+            "x": 2560,
+            "y": 1377
+        },
+        "parent": {
+            "x": 2560,
+            "y": 1440
+        },
+        "detected": {
+            "x": 2560,
+            "y": 1400
+        },
         "resolutionScale": 1,
         "mapBoundingBox": {
             "topLeft": {
@@ -22,9 +31,18 @@
     },
     {
         "id": 1,
-        "resolution": "1920x1017",
-        "parent": "1920x1080",
-        "detected": "1920x1040",
+        "resolution": {
+            "x": 1920,
+            "y": 1017
+        },
+        "parent": {
+            "x": 1920,
+            "y": 1080
+        },
+        "detected": {
+            "x": 1920,
+            "y": 1040
+        },
         "resolutionScale": 0.75,
         "mapBoundingBox": {
             "topLeft": {
