@@ -35,7 +35,6 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   mainWindow.maximize();
   mainWindow.setIgnoreMouseEvents(IGNOREWINDOW, { forward: IGNOREWINDOW });
-  mainWindow.webContents.openDevTools()
   winWebContents = mainWindow.webContents;
 
   console.log('Window Created');
@@ -97,7 +96,6 @@ if (require('electron-squirrel-startup')) {
   // Some APIs can only be used after this event occurs.
   app.whenReady().then(() => {
     createWindow();
-    require('vue-devtools').install();
 
     // Hook into the mouse to observe outside of rendered areas
     ioHook.start(true);
