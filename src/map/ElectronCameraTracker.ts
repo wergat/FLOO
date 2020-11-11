@@ -46,7 +46,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleMouseDown(message: any) {
+    handleMouseDown(message: any): void {
       // Left Click
       if (message.button === 1) {
         // Reset all drag coordinates and tracked vectors etc
@@ -68,7 +68,7 @@ const Tracker = new Vue({
     },
 
     /** Handles the map and camera positions when the camera gets dragged around */
-    handleMouseDrag(message : any) {
+    handleMouseDrag(message: any): void {
       if (this.isDraggingCamera) {
         // Calculate the camera movement based on camera render size (zoom) and drag delta
         // Summing the total distance moved from the start position
@@ -88,7 +88,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleMouseUp(message: any) {
+    handleMouseUp(message: any): void {
       if (this.isDraggingCamera) {
         // Save Camera settings
         Camera.setCameraPosition(
@@ -103,7 +103,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleMouseWheel(message: any) {
+    handleMouseWheel(message: any): void {
       if (this.isDraggingCamera) { return; }
       // Update the camera when we zoom. Update the other stuff only if zoom actually changed
       if (Camera.handleZoom(message.x, message.y, message.rotation)) {
@@ -112,7 +112,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleRendererKeyEvent() {
+    handleRendererKeyEvent(): void {
       // Not used right now. TODO: Detect use of [Space], center cam on player
     },
 

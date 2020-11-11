@@ -2,15 +2,17 @@ import Color from 'color';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import {
-  getDefualtPlatoon, loadSetting, savePlatoonData, saveSettings,
+  getDefaultPlatoon, loadSetting, savePlatoonData, saveSettings, saveCachedData,
 } from '../unsorted/StoreHandler';
-import { Platoon, Squad, Coord } from '../assets/classes';
+import {
+  Platoon, Squad, Coord, continent,
+} from '../assets/classes';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    platoons: getDefualtPlatoon(),
+    platoons: getDefaultPlatoon(),
     continents: [
       {
         name: 'Indar',
@@ -86,28 +88,27 @@ export default new Vuex.Store({
     focus: 0,
     UISize: loadSetting('UISize'),
     screenSize: { x: 1, y: 1 },
-    isMinimized: false,
+    showMapContent: true,
     isMovingUI: false,
     UIColor: 'hsl(221, 73%, 37%)',
   },
   getters: {
-    isMovingUI: (state) => state.isMovingUI,
-    isMinimized: (state) => state.isMinimized,
-    isGameFocused: (state) => state.focus === 0,
-    isUIFocused: (state) => state.focus === 1,
-    UISize: (state) => state.UISize,
-    platoons: (state) => state.platoons,
-    getPlatoonByID: (state) => (id: number) => state.platoons[id],
-    getPlatoonByIndex: (state) => (index: number) => state.platoons[index],
+    isMovingUI: (state) : boolean => state.isMovingUI,
+    showMapContent: (state) : boolean => state.showMapContent,
+    isGameFocused: (state) : boolean => state.focus === 0,
+    isUIFocused: (state) : boolean => state.focus === 1,
+    UISize: (state) : number => state.UISize,
+    platoons: (state) : Platoon[] => state.platoons,
+    getPlatoonByIndex: (state) => (index: number) : Platoon => state.platoons[index],
     getPlatoonIndexByID(state, id: number): number {
       return state.platoons.map((platoon) => platoon.id).indexOf(id);
     },
-    getPlatoonIDByIndex: (state) => (index: number) => state.platoons[index].id,
-    getPlatoonCount: (state) => state.platoons.length,
-    getSquadByID: (state) => (pID: number, sID: number) => state.platoons[pID].squads[sID],
-    continents: (state) => state.continents,
-    getContinentByID: (state) => (id: number) => state.continents[id],
-    UIColor: (state) => state.UIColor,
+    getPlatoonIDByIndex: (state) => (index: number) : number => state.platoons[index].id,
+    getPlatoonCount: (state) : number => state.platoons.length,
+    getSquadByID: (state) => (pID: number, sID: number) : Squad => state.platoons[pID].squads[sID],
+    continents: (state) : continent[] => state.continents,
+    getContinentByID: (state) => (id: number) : continent => state.continents[id],
+    UIColor: (state) : string => state.UIColor,
   },
   mutations: {
     addPlatoon(state, position: Coord): void {
@@ -148,6 +149,7 @@ export default new Vuex.Store({
       state.platoons[platCounter].darkColor = ptColor.darken(0.25).toString();
       state.platoons[platCounter].darkestColor = ptColor.darken(0.5).toString();
       savePlatoonData(state.platoons);
+      saveCachedData();
     },
     setPlatoonColor(state, payload: { pID: number, color: Color }): void {
       state.platoons[payload.pID].lightestColor = payload.color.lighten(0.5).toString();
@@ -161,6 +163,7 @@ export default new Vuex.Store({
       const i = state.platoons.map((platoon) => platoon.id).indexOf(id);
       state.platoons.splice(i, 1);
       savePlatoonData(state.platoons);
+      saveCachedData();
     },
     /** Sets what is currently in focus, -1 == Other, 0 == Game, 1 == UI */
     setFocus(state, value: number): void {
@@ -195,19 +198,30 @@ export default new Vuex.Store({
       }
       savePlatoonData(state.platoons);
     },
-    setSquadPosition(state, payload: { xPos: number, yPos: number, sID: number, pID: number }) {
+    /**
+     * Sets a squad to a specific position in mapspace
+     * @param state Store
+     * @param payload target xPos, yPos and squadID sID and platoonID pID to identify the squad
+     */
+    setSquadPosition(state, payload: { xPos: number, yPos: number, sID: number, pID: number }) : void {
       const ID = state.platoons.map((platoon) => platoon.id).indexOf(payload.pID);
       state.platoons[ID].squads[payload.sID].pos = { x: payload.xPos, y: payload.yPos };
       savePlatoonData(state.platoons);
     },
+    /**
+     * Clears current Continent Data, then writes payload onto it
+     * TODO: Move all continent related stuff into its own handler
+     * @param state Store
+     * @param payload Continent Data
+     */
     setContinentData(state, payload: any): void {
       while (state.continents.length > 0) {
         state.continents.pop();
       }
       payload.forEach((item: any) => { state.continents.push(item); });
     },
-    setMinimized(state, value: boolean): void {
-      state.isMinimized = value;
+    setShowMapContent(state, value: boolean): void {
+      state.showMapContent = value;
     },
     setMovingUI(state, value: boolean): void {
       state.isMovingUI = value;

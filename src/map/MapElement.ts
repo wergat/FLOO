@@ -1,5 +1,6 @@
 // Requires camera so it can tell if it has to be rendered or not
 import Camera from './Camera';
+import { Coord } from '../assets/classes';
 
 const MapElement = {
   props: {
@@ -9,7 +10,7 @@ const MapElement = {
     tracker: Object,
     skipFrameLimit: Number,
   },
-  data() {
+  data(): any {
     return {
       mapPos: { x: 0, y: 0 },
       /** Position this mapSquadMarker is getting rendered at. We use this instead of MapElements.screenPos
@@ -20,12 +21,12 @@ const MapElement = {
       skipFrameCounter: 0,
     };
   },
-  created() {
+  created(): void {
     // Init the current value (TODO: Are you sure thats needed?)
     this.forcedScreenPos = this.screenPos;
   },
   watch: {
-    isDraggingCamera(newVal : Boolean) {
+    isDraggingCamera(newVal: Boolean): void {
       if (newVal) {
         this.startDrag();
       } else {
@@ -35,7 +36,7 @@ const MapElement = {
   },
   computed: {
     /** Gets the current position of this element on screenspace */
-    screenPos(): { x: number, y: number } {
+    screenPos(): Coord {
       if (this.useForcedScreenPos) {
         return this.forcedScreenPos;
       }
@@ -46,7 +47,7 @@ const MapElement = {
     },
 
     /** Position used for the element style */
-    getPositionStyle() : {transform: string, transitionDuration : string, transitionTimingFunction : string} {
+    getPositionStyle(): { transform: string, transitionDuration: string, transitionTimingFunction: string } {
       return {
         transform: `translate(${this.screenPos.x}px,${this.screenPos.y}px)`,
         transitionDuration: `${Camera.isZooming ? 200 : 25}ms`,
@@ -57,14 +58,14 @@ const MapElement = {
   methods: {
     // Starts dragging this element. Also used when the camera is being dragged
     // Changes rendering from
-    startDrag() {
+    startDrag(): void {
       this.dragStartScreenPos = this.screenPos;
       this.forcedScreenPos = { x: this.screenPos.x, y: this.screenPos.y };
       this.useForcedScreenPos = true;
       this.dragElement();
     },
     // Requires total drag delta as input
-    dragElement() {
+    dragElement(): void {
       this.skipFrameCounter += 1;
       if (this.skipFrameCounter > this.skipFrameLimit) {
         this.forcedScreenPos = {
@@ -78,13 +79,13 @@ const MapElement = {
       }
     },
 
-    endDrag() {
+    endDrag(): void {
       this.useForcedScreenPos = false;
     },
     /** Sets the position as if x and y are coordinates on the map
      * [0|0] = top left corner on map
      */
-    setPosition(x: number, y: number) {
+    setPosition(x: number, y: number): void {
       this.mapPos = { x, y };
     },
 
@@ -92,7 +93,7 @@ const MapElement = {
      * [0|0] = top left corner of screen
      */
 
-    setPositionAsOnScreen(x: number, y: number) {
+    setPositionAsOnScreen(x: number, y: number): void {
       this.mapPos = {
         x: Camera.zoomFactor.x * (x + this.renderOffset.x) + Camera.onMapPos.x,
         y: Camera.zoomFactor.y * (y + this.renderOffset.y) + Camera.onMapPos.y,
@@ -104,7 +105,7 @@ const MapElement = {
      * @param x X distance in px from the topleft corner to center of object
      * @param y Y distance in px from the topleft corner to center of object
      */
-    setRenderOffset(x: number, y: number) {
+    setRenderOffset(x: number, y: number): void {
       this.renderOffset = { x, y };
     },
   },

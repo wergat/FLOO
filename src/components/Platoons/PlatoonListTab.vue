@@ -33,7 +33,7 @@
             type="is-success"
             :size="getClassSize()"
             :style="getAddPlatoonButtonStyle()"
-            @click="addPlatoon"
+            @click="addPlatoonToList"
           >
             <b-icon icon="plus" />
           </b-button>
@@ -78,7 +78,11 @@ export default Vue.extend({
     },
   },
   methods: {
-    addPlatoon() :void {
+    /**
+     * Adds platoon to the list of platoons
+     * Special name to try to fix a bug
+     */
+    addPlatoonToList() :void {
       const x = Camera.continentSize.x * (0.5 + (Math.random() / 10 - 0.05));
       const y = Camera.continentSize.y * (0.5 + (Math.random() / 10 - 0.05));
       this.$store.commit('addPlatoon', { x, y });

@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-show="!isMinimized"
-    id="MapContentBox"
-  >
+  <div id="MapContentBox">
     <div
       v-for="platoonIndex in $store.getters.getPlatoonCount"
       :key="platoonIndex"
@@ -10,8 +7,8 @@
       <map-squad-marker
         v-for="squadID in 4"
         :key="squadID"
-        :platoon="(platoonIndex - 1)"
-        :squad="(squadID - 1)"
+        :platoon-index="(platoonIndex - 1)"
+        :squad-index="(squadID - 1)"
         :render-offset="{ x: 17, y: 17 }"
         :is-dragging-camera="tracker.isDraggingCamera"
         :tracker="tracker"
@@ -29,6 +26,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+
 import MapSquadMarker from '../Platoons/MapSquadMarker.vue';
 import MapBoundingBox from './MapBoundingBox.vue';
 import Tracker from '../../map/Tracker';
@@ -50,14 +48,8 @@ export default Vue.extend({
       }
       return squads;
     },
-    isMinimized(): boolean {
-      return this.$store.getters.isMinimized;
-    },
   },
   mounted() {
-    if (this.$store.getters.getPlatoonByID(0).id === -1) {
-      this.$store.commit('removePlatoon', -1);
-    }
     this.$store.commit('setContinentData', continentData);
   },
 });

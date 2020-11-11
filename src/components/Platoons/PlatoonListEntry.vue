@@ -16,9 +16,8 @@
       <p
         :class="['card-header-title', 'platoonCardHeaderPlatoonName', 'content', getClassSize()]"
         :style="getNamePadding()"
-      >
-        {{ platoonObject.name }}
-      </p>
+        v-text="platoonObject.name"
+      />
       <platoon-list-squad-button
         v-for="(letter, squadIndex) in ['A', 'B', 'C', 'D']"
         :key="squadIndex"
@@ -48,7 +47,6 @@
             v-model="platoonObject.name"
             expanded
             :custom-class="getClassSize()"
-            @blur="platoonNameChangeDone"
           />
           <div
             class="buttons"
@@ -161,8 +159,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      name: 'hey',
-      platoonNameChangeDone: true,
+      name: '??? Something Broke 3128',
       colorPickIsOpen: false,
       colorHue: -1,
       colorSat: -1,

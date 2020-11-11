@@ -1,5 +1,5 @@
 import isElectron from 'is-electron';
-import { Coord } from '../assets/classes';
+import { Coord, ResolutionSettings } from '../assets/classes';
 import resolutionData from './resolutionData.json';
 
 let ipcRenderer : any;
@@ -37,7 +37,7 @@ function getClosestResolutionID(size: Coord): number {
   }
 }
 
-function getResolutionByID(id : number) {
+function getResolutionByID(id : number) : ResolutionSettings {
   return resolutionData[id];
 }
 

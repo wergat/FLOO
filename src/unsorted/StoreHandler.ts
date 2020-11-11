@@ -10,10 +10,12 @@ if (isElectron()) {
 const settingsStore = isElectron() ? new Store({ name: 'config' }) : null;
 /** Used to store data about each platoon in case of restart etc. */
 const platoonStore = isElectron() ? new Store({ name: 'platoons' }) : null;
-/** map markers */
-const mapMarkerStore = isElectron() ? new Store({ name: 'mapMarkers' }) : null;
 
-function getDefualtPlatoon(): Platoon[] {
+/**
+ * Returns the saved platoon data as a list.
+ * Returns empty list if it could not find any data
+ */
+function getDefaultPlatoon(): Platoon[] {
   const list: Platoon[] = [];
   if (isElectron()) {
     let i = 0;
@@ -26,71 +28,18 @@ function getDefualtPlatoon(): Platoon[] {
       } else { break; }
       i += 1;
     }
-  } else {
-    list.push({
-      name: 'Something bad happened!',
-      id: -1,
-      squads: [
-        {
-          platoonID: 0,
-          squadLetter: 'a',
-          isInPosition: true,
-          isEmpty: false,
-          pos: {
-            x: 10000,
-            y: 10000,
-          },
-          marker: 0,
-        },
-        {
-          platoonID: 1,
-          squadLetter: 'b',
-          isInPosition: true,
-          isEmpty: false,
-          pos: {
-            x: 10000,
-            y: 10000,
-          },
-          marker: 0,
-        },
-        {
-          platoonID: 2,
-          squadLetter: 'c',
-          isInPosition: true,
-          isEmpty: false,
-          pos: {
-            x: 10000,
-            y: 10000,
-          },
-          marker: 0,
-        },
-        {
-          platoonID: 3,
-          squadLetter: 'd',
-          isInPosition: true,
-          isEmpty: false,
-          pos: {
-            x: 10000,
-            y: 10000,
-          },
-          marker: 0,
-        },
-      ],
-      lightestColor: 'hsl(222.29999999999995, 57.7%, 79.1%)',
-      lightColor: 'hsl(222.29999999999995, 57.7%, 65.9%)',
-      color: 'rgb(65, 106, 204)',
-      darkColor: 'hsl(222.29999999999995, 57.7%, 39.6%)',
-      darkestColor: 'hsl(222.29999999999995, 57.7%, 26.4%)',
-    });
   }
-
   return list;
 }
 
 let lastData : Platoon[];
 let recieveData : boolean = false;
 
-function saveCachedData() {
+/**
+ * Saves the currently chached platoon data to disk
+ * gets called every minute, or when a platoon is created/deleted, and when the app is quit
+ */
+function saveCachedData(): void {
   if (isElectron() && recieveData) {
     recieveData = false;
     platoonStore.store = lastData;
@@ -98,21 +47,29 @@ function saveCachedData() {
 }
 
 // TODO: Save platoon data when not using electron
+/**
+ * Chaches the given platoon data
+ * It gets written to disk every minute, to reduce disk usage.
+ * @param platoonData Platoon List to write to disk
+ */
 function savePlatoonData(platoonData : Platoon[]): void {
   recieveData = true;
   lastData = platoonData;
 }
 
-/** Returns the value of the stores setting */
+/**
+ * Returns the value of the stores setting
+ * Returns value of settings, or null if it could not load it
+ */
 function loadSetting(setting: string): any {
-  if (isElectron()) {
-    return settingsStore.get(setting);
-  }
-  return null;
+  if (!isElectron()) { return null; }
+  return settingsStore.get(setting);
 }
 
-/** Sets a setting to be saved */
-function saveSettings(setting : string, value : any) {
+/**
+ * Sets a setting to be saved
+ */
+function saveSettings(setting : string, value : any): void {
   if (isElectron()) {
     settingsStore.set(setting, value);
   }
@@ -122,5 +79,5 @@ function saveSettings(setting : string, value : any) {
 window.setInterval(() => { saveCachedData(); }, 60000);
 
 export {
-  getDefualtPlatoon, savePlatoonData, saveCachedData, saveSettings, loadSetting,
+  getDefaultPlatoon, savePlatoonData, saveCachedData, saveSettings, loadSetting,
 };

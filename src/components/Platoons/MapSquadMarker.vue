@@ -1,7 +1,7 @@
 <template>
   <div
     v-show="showMarker"
-    :id="`MarkerP${platoon}S${squad}`"
+    :id="`MarkerP${platoonIndex}S${squadIndex}`"
     class="squadMarker clickable"
     :style="[getSquadStyle, getPositionStyle]"
     @mousedown="onButtonDown"
@@ -14,7 +14,7 @@
     <div v-show="showArrows">
       <i
         v-for="n in 6"
-        :id="`squadMarkerArrowP${platoon}S${squad}A${n-1}`"
+        :id="`squadMarkerArrowP${platoonIndex}S${squadIndex}A${n-1}`"
         :key="n"
         class="arrow squadArrow"
         :style="getArrowStyle(n - 1)"
@@ -34,9 +34,9 @@ export default Vue.extend({
   mixins: [MapElement, Interactable],
   props: {
     /** Squad Index */
-    squad: { type: Number, default: -1 },
+    squadIndex: { type: Number, default: -1 },
     /** Platoon Index */
-    platoon: { type: Number, default: -1 },
+    platoonIndex: { type: Number, default: -1 },
   },
 
   data() {
@@ -53,19 +53,19 @@ export default Vue.extend({
   },
   computed: {
     platoonID() : number {
-      return this.$store.getters.getPlatoonIDByIndex(this.platoon);
+      return this.$store.getters.getPlatoonIDByIndex(this.platoonIndex);
     },
     storedPosition() : Coord {
-      return this.$store.getters.getSquadByID(this.platoon, this.squad).pos;
+      return this.$store.getters.getSquadByID(this.platoonIndex, this.squadIndex).pos;
     },
     showMarker() : boolean {
-      return !this.$store.getters.getSquadByID(this.platoon, this.squad).isEmpty;
+      return !this.$store.getters.getSquadByID(this.platoonIndex, this.squadIndex).isEmpty;
     },
     showArrows() : boolean {
-      return !this.$store.getters.getSquadByID(this.platoon, this.squad).isInPosition;
+      return !this.$store.getters.getSquadByID(this.platoonIndex, this.squadIndex).isInPosition;
     },
     getSquadStyle() : any {
-      const platoonData = this.$store.getters.getPlatoonByIndex(this.platoon);
+      const platoonData = this.$store.getters.getPlatoonByIndex(this.platoonIndex);
       const darker = platoonData.darkestColor;
       const normal = platoonData.color;
       const brighter = platoonData.lightestColor;
@@ -78,10 +78,10 @@ export default Vue.extend({
       };
 
       // If we are dragging, we want to use the temporary position to avoid recalculating the renderPos
-      if (this.platoon % 4 > 0) {
-        const deg = 45 + this.platoon * 70;
-        const sizeA = 5 + ((this.platoon * 3) % 7);
-        const sizeB = 5 + ((this.platoon * 4) % 7);
+      if (this.platoonID % 4 > 0) {
+        const deg = 45 + this.platoonID * 70;
+        const sizeA = 5 + ((this.platoonID * 3) % 7);
+        const sizeB = 5 + ((this.platoonID * 4) % 7);
         style.background = `repeating-linear-gradient(${deg}deg, ${brighter}, ${brighter} ${sizeA}px,
          ${normal} ${sizeB}px, ${normal} ${sizeA + sizeB}px)`;
       } else {
@@ -95,21 +95,20 @@ export default Vue.extend({
     },
   },
   watch: {
-    storedPosition() : void {
-      this.updateData();
+    storedPosition: {
+      handler():any { this.updateData(); },
+      immediate: true,
     },
   },
-  mounted() {
-    this.updateData();
-  },
+
   methods: {
     updateData(): void {
     // Get Platoon Data
-      const platoonData = this.$store.getters.getPlatoonByIndex(this.platoon);
+      const platoonData = this.$store.getters.getPlatoonByIndex(this.platoonIndex);
       // Set the letter
-      this.letter = ['?', 'A', 'B', 'C', 'D'][this.squad + 1];
+      this.letter = ['?', 'A', 'B', 'C', 'D'][this.squadIndex + 1];
       // Call MapElements.setPosition to set the position of this element
-      this.setPosition(platoonData.squads[this.squad].pos.x, platoonData.squads[this.squad].pos.y);
+      this.setPosition(platoonData.squads[this.squadIndex].pos.x, platoonData.squads[this.squadIndex].pos.y);
     },
     // TODO: turn this into computed property
     getArrowStyle(n: number) : any {
@@ -137,6 +136,9 @@ export default Vue.extend({
       }
     },
 
+    /**
+     * Setting up the dragging
+     */
     onDragStart(event : MouseEvent) : void {
       this.isDragging = true;
       this.start = { x: event.clientX, y: event.clientY };
@@ -145,7 +147,8 @@ export default Vue.extend({
       this.useForcedScreenPos = true;
     },
 
-    /** Gets called on mousemove or touchmvoe
+    /**
+     * Gets called on mousemove or touchmvoe
      * Touchmove events gets parsed to act like mousemove event
      * */
     onDragging(event : MouseEvent) : void {
@@ -159,7 +162,8 @@ export default Vue.extend({
       }
     },
 
-    /** Gets called on mouseup or contextmenu
+    /**
+     * Gets called on mouseup or contextmenu
    * ends the dragging of an map squad marker
    */
     onDragEnd(event: MouseEvent) : void {
@@ -170,17 +174,17 @@ export default Vue.extend({
         // Click
         this.$store.commit('setSquadMarkerArrowState', {
           pID: this.platoonID,
-          sID: this.squad,
+          sID: this.squadIndex,
           toggle: true,
         });
       } else {
         // Drag
         this.$store.commit('setSquadMarkerArrowState', {
-          pID: this.platoonID, sID: this.squad, toggle: false, value: event.shiftKey,
+          pID: this.platoonID, sID: this.squadIndex, toggle: false, value: event.shiftKey,
         });
       }
       this.$store.commit('setSquadPosition', {
-        pID: this.platoonID, sID: this.squad, xPos: this.mapPos.x, yPos: this.mapPos.y,
+        pID: this.platoonID, sID: this.squadIndex, xPos: this.mapPos.x, yPos: this.mapPos.y,
       });
 
       // End event hooks to keep performance high

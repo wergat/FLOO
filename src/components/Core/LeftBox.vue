@@ -6,6 +6,7 @@
     @mouseleave="setWindowsFocus(false)"
     @mouseenter="setWindowsFocus(true)"
   >
+    <!-- Normal UI -->
     <div
       v-show="!showMoveUI"
       id="left-content-box"
@@ -22,6 +23,8 @@
         <settingsTab @settingsDone="settingsDone = $event" />
       </b-tabs>
     </div>
+
+    <!-- Move this element UI -->
     <div
       v-show="showMoveUI"
       class="moveUIContainer"
@@ -54,6 +57,8 @@
 </template>
 <script lang="ts">
 import Vue from 'vue';
+import { mapGetters } from 'vuex';
+
 import UIColor from '../../mixins/UIColor';
 import { clamp } from '../../unsorted/Utils';
 import { loadSetting, saveSettings } from '../../unsorted/StoreHandler';
@@ -82,9 +87,13 @@ export default Vue.extend({
   mixins: [Interactable, UIColor],
   data() {
     return {
+      // Currently open Tab
       activeContentTab: 1,
+      // All Settings set?
       settingsDone: false,
+      // If true, shows the move UI instead of the normal UI
       showMoveUI: false,
+      // Position, etc of the window, used when moving it around
       width: 0,
       height: 0,
       top: 400,
@@ -97,15 +106,10 @@ export default Vue.extend({
     };
   },
   computed: {
-    UISize(): number {
-      return this.$store.getters.UISize;
-    },
+    ...mapGetters(['isMovingUI', 'UISize']),
     getSize(): string {
       const arr = ['small', 'normal', 'medium', 'large'];
       return `is-${arr[clamp(this.UISize, 0, 3)]}`;
-    },
-    isMovingUI(): boolean {
-      return this.$store.getters.isMovingUI;
     },
     getBoxStyle(): LeftBoxStyle {
       const base: LeftBoxStyle = {

@@ -173,14 +173,14 @@
           />
         </b-tooltip>
         <b-tooltip
-          :label="isMinimized ? 'Hiding map contents' : 'Hide map contents'"
-          :type="isMinimized ? 'is-danger' : 'is-primary'"
-          :always="isMinimized"
+          :label="showMapContent ? 'Hide map contents' : 'Hiding map contents'"
+          :type="showMapContent ? 'is-primary' : 'is-danger'"
+          :always="!showMapContent"
         >
           <b-button
-            :type="isMinimized ? 'is-danger' : 'is-primary'"
+            :type="showMapContent ? 'is-primary' : 'is-danger'"
             :size="getClassSize"
-            :icon-right="isMinimized ? 'eye-slash' : 'eye'"
+            :icon-right="showMapContent ? 'eye' : 'eye-slash'"
             @click="toggleMinimize"
           />
         </b-tooltip>
@@ -201,6 +201,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapGetters } from 'vuex';
+
 import { clamp } from '../../unsorted/Utils';
 import { saveCachedData } from '../../unsorted/StoreHandler';
 import Camera from '../../map/Camera';
@@ -224,6 +226,7 @@ export default Vue.extend({
     };
   },
   computed: {
+    ...mapGetters(['showMapContent']),
     UISize: {
       get(): number {
         return this.$store.getters.UISize;
@@ -231,6 +234,9 @@ export default Vue.extend({
       set(newValue: number): void {
         this.$store.commit('setUISize', newValue);
       },
+    },
+    isMovingUI(): boolean {
+      return this.$store.getters.isMovingUI;
     },
     isSettingsDone() : boolean {
       return this.isResolutionOkay;
@@ -304,14 +310,6 @@ export default Vue.extend({
       }
       return list;
     },
-
-    isMinimized(): boolean {
-      return this.$store.getters.isMinimized;
-    },
-
-    isMovingUI(): boolean {
-      return this.$store.getters.isMovingUI;
-    },
   },
   watch: {
     isSettingsDone(newV : boolean): void {
@@ -347,7 +345,7 @@ export default Vue.extend({
     },
 
     toggleMinimize(): void {
-      this.$store.commit('setMinimized', !this.isMinimized);
+      this.$store.commit('setShowMapContent', !this.showMapContent);
     },
 
     toggleMoveUI(): void {

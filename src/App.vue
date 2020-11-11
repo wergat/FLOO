@@ -1,13 +1,13 @@
 <template>
   <div id="app">
     <left-box />
-    <map-contents />
+    <map-contents v-if="showMapContent" />
   </div>
 </template>
 
 <script lang="ts">
-
 import Vue from 'vue';
+import { mapGetters } from 'vuex';
 
 import LeftBox from './components/Core/LeftBox.vue';
 import MapContents from './components/Core/MapContent.vue';
@@ -18,6 +18,7 @@ export default Vue.extend({
     MapContents,
     LeftBox,
   },
+  computed: { ...mapGetters(['showMapContent']) },
 });
 
 </script>

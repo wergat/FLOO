@@ -26,6 +26,8 @@ module.exports = {
       ignoreUrls: true,
       ignoreComments: true,
     }],
+    'no-constant-condition': ['error', { checkLoops: false }],
+    'import/prefer-default-export': 'off',
     'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
     'no-param-reassign': ['warn', { props: false }],
     'max-classes-per-file': ['warn', 1],

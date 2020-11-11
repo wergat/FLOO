@@ -1,9 +1,9 @@
-import { clamp } from '../unsorted/Utils';
 import Color from 'color';
+import { clamp } from '../unsorted/Utils';
 
 const PlatoonListEntry = {
   computed: {
-    UISize() {
+    UISize(): number {
       return this.$store.getters.UISize;
     },
   },
@@ -12,12 +12,12 @@ const PlatoonListEntry = {
       return Color(color).isDark();
     },
 
-    getClassSize():string {
+    getClassSize(): string {
       const arr = ['small', 'normal', 'medium', 'large'];
       return `is-${arr[clamp(this.UISize, 0, 3)]}`;
     },
 
-    getArrorStyle() : any {
+    getArrorStyle(): any {
       const size = this.UISize;
       return {
         padding: `${Math.max(size * 0.75, 0)}rem ${Math.max(size * 0.5, 0)}rem`,
@@ -26,30 +26,30 @@ const PlatoonListEntry = {
       };
     },
 
-    isNotBasic() : any {
+    isNotBasic(): any {
       return this.UISize >= -1;
     },
 
-    getPadding() : any {
+    getPadding(): any {
       return {
         padding: `${1 + this.UISize * 0.5}rem`,
       };
     },
 
-    getBottomMargin() : any {
+    getBottomMargin(): any {
       return {
         marginBottom: `${1.5 + this.UISize * 0.25}rem`,
       };
     },
 
-    getNamePadding() : any {
+    getNamePadding(): any {
       return {
         // .75rem 1rem
         padding: `${0.6 + this.UISize * 0.1}rem ${1 + this.UISize * 0.2}rem`,
       };
     },
 
-    getNotificationPadding() : any {
+    getNotificationPadding(): any {
       return {
         padding: `${Math.max(0.5 + this.UISize * 0.25, 0)}rem ${Math.max(0.5 + this.UISize * 0.25, 0.25)}rem 
               ${Math.max(this.UISize * 0.25, 0)}rem ${Math.max(0.75 + this.UISize * 0.5, 0)}rem`,

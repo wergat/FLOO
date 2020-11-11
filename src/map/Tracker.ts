@@ -7,7 +7,7 @@ tracker.start();
 
 // TODO: Clean up a lot of duplicated code between the two trackers
 export default {
-  get() {
+  get() : any {
     return tracker;
   },
 };
