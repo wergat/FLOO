@@ -55,6 +55,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import UIColor from '../../mixins/UIColor';
+import { clamp } from '../../unsorted/Utils';
 import { loadSetting, saveSettings } from '../../unsorted/StoreHandler';
 import Camera from '../../map/Camera';
 import PlatoonListTab from '../Platoons/PlatoonListTab.vue';
@@ -62,17 +63,17 @@ import SettingsTab from './SettingsTab.vue';
 import Interactable from '../../mixins/Interactable';
 
 interface LeftBoxStyle {
-  width : string,
-   padding: string,
-    top?: string,
-    borderTop?: string,
-     bottom?: string,
-     borderBottom?: string,
-      left?:string,
-      borderLeft?: string,
-       right?:string,
-       borderRight?: string,
-       }
+  width: string;
+  padding: string;
+  top?: string;
+  borderTop?: string;
+  bottom?: string;
+  borderBottom?: string;
+  left?: string;
+  borderLeft?: string;
+  right?: string;
+  borderRight?: string;
+}
 
 // Create
 export default Vue.extend({
@@ -96,40 +97,48 @@ export default Vue.extend({
     };
   },
   computed: {
-    UISize() : number {
+    UISize(): number {
       return this.$store.getters.UISize;
     },
     getSize(): string {
       const arr = ['small', 'normal', 'medium', 'large'];
-      return `is-${arr[Math.min(Math.max(this.UISize, 0), 3)]}`;
+      return `is-${arr[clamp(this.UISize, 0, 3)]}`;
     },
     isMovingUI(): boolean {
       return this.$store.getters.isMovingUI;
     },
     getBoxStyle(): LeftBoxStyle {
-      const base : LeftBoxStyle = {
+      const base: LeftBoxStyle = {
         width: `${400 + this.UISize * 100}px`,
         padding: `${Math.max(0.75 + this.UISize * 0.5, 0)}rem`,
       };
       if (this.snapTop) {
         base.top = `${this.top}px`;
-        if (this.isMovingUI) { base.borderTop = '6px solid red'; }
+        if (this.isMovingUI) {
+          base.borderTop = '6px solid red';
+        }
       } else {
         base.bottom = `${this.bottom}px`;
-        if (this.isMovingUI) { base.borderBottom = '6px solid red'; }
+        if (this.isMovingUI) {
+          base.borderBottom = '6px solid red';
+        }
       }
       if (this.snapLeft) {
         base.left = `${this.left}px`;
-        if (this.isMovingUI) { base.borderLeft = '6px solid red'; }
+        if (this.isMovingUI) {
+          base.borderLeft = '6px solid red';
+        }
       } else {
         base.right = `${this.right}px`;
-        if (this.isMovingUI) { base.borderRight = '6px solid red'; }
+        if (this.isMovingUI) {
+          base.borderRight = '6px solid red';
+        }
       }
       return base;
     },
   },
   watch: {
-    isMovingUI(newVal : boolean):void {
+    isMovingUI(newVal: boolean): void {
       const ele = document.getElementById('left-content-box');
       if (ele) {
         const style = window.getComputedStyle(ele);
@@ -149,10 +158,10 @@ export default Vue.extend({
     }
   },
   methods: {
-    submitWindowPosiions():void {
+    submitWindowPosiions(): void {
       this.$store.commit('setMovingUI', false);
     },
-    onDragStart(event : MouseEvent):void {
+    onDragStart(event: MouseEvent): void {
       this.oldDragPos.x = event.clientX;
       this.oldDragPos.y = event.clientY;
 
@@ -168,7 +177,7 @@ export default Vue.extend({
       document.addEventListener('mousemove', this.onDragging);
       document.addEventListener('mouseup', this.onDragEnd);
     },
-    onDragging(event : MouseEvent):void {
+    onDragging(event: MouseEvent): void {
       const delta = {
         x: this.oldDragPos.x - event.clientX,
         y: this.oldDragPos.y - event.clientY,
@@ -179,14 +188,26 @@ export default Vue.extend({
       this.bottom += delta.y;
 
       // Snapping
-      if (this.left <= 0) { this.snapLeft = true; this.left = 0; }
-      if (this.top <= 0) { this.snapTop = true; this.top = 0; }
-      if (this.left + this.width >= Camera.windowSize.x || this.right <= 0) { this.snapLeft = false; this.right = 0; }
-      if (this.top + this.height >= Camera.windowSize.y || this.bottom <= 0) { this.snapTop = false; this.bottom = 0; }
+      if (this.left <= 0) {
+        this.snapLeft = true;
+        this.left = 0;
+      }
+      if (this.top <= 0) {
+        this.snapTop = true;
+        this.top = 0;
+      }
+      if (this.left + this.width >= Camera.windowSize.x || this.right <= 0) {
+        this.snapLeft = false;
+        this.right = 0;
+      }
+      if (this.top + this.height >= Camera.windowSize.y || this.bottom <= 0) {
+        this.snapTop = false;
+        this.bottom = 0;
+      }
       this.oldDragPos.x = event.clientX;
       this.oldDragPos.y = event.clientY;
     },
-    onDragEnd():void {
+    onDragEnd(): void {
       document.removeEventListener('mousemove', this.onDragging);
       document.removeEventListener('mouseup', this.onDragEnd);
       saveSettings('leftBoxPos', {

@@ -201,6 +201,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { clamp } from '../../unsorted/Utils';
 import { saveCachedData } from '../../unsorted/StoreHandler';
 import Camera from '../../map/Camera';
 import CloseApp from '../../unsorted/CloseAppHandler';
@@ -236,7 +237,7 @@ export default Vue.extend({
     },
     getClassSize(): string {
       const arr = ['small', 'normal', 'medium', 'large'];
-      return `is-${arr[Math.min(Math.max(this.UISize, 0), 3)]}`;
+      return `is-${arr[clamp(this.UISize, 0, 3)]}`;
     },
 
     isWarpgateAndContinentOkay(): boolean {

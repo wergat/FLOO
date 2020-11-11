@@ -1,3 +1,4 @@
+import { clamp } from '../unsorted/Utils';
 import Color from 'color';
 
 const PlatoonListEntry = {
@@ -13,7 +14,7 @@ const PlatoonListEntry = {
 
     getClassSize():string {
       const arr = ['small', 'normal', 'medium', 'large'];
-      return `is-${arr[Math.min(Math.max(this.UISize, 0), 3)]}`;
+      return `is-${arr[clamp(this.UISize, 0, 3)]}`;
     },
 
     getArrorStyle() : any {
