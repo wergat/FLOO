@@ -120,6 +120,7 @@
           v-show="UISize > -2"
           :size="getClassSize"
           icon-right="search-minus"
+          @click="UISize = UISize - 1"
         />
         <b-slider
           v-model="UISize"
@@ -142,6 +143,7 @@
           :size="getClassSize"
           icon-right="search-plus"
           :disabled="UISize == 3"
+          @click="UISize = UISize + 1"
         />
       </b-field>
       <!-- Bottom Buttons -->
