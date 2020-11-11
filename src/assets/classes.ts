@@ -32,7 +32,7 @@ class Squad {
     platoonID: number;
 
     /** Letter of squad A-D for alpha - delta */
-    squadLetter: string;
+    squadID: number;
 
     /** Currently in position? If not, it shows that it is not in position. */
     isInPosition: boolean;
@@ -46,9 +46,9 @@ class Squad {
     /** Marker for the squad */
     marker: number = -1;
 
-    constructor(platoonID: number, squadLetter: string, _pos: Coord) {
+    constructor(platoonID: number, squadID: number, _pos: Coord) {
       this.platoonID = platoonID;
-      this.squadLetter = squadLetter;
+      this.squadID = squadID;
       this.isInPosition = true;
 
       this.isEmpty = false;

@@ -36,7 +36,7 @@ export default Vue.extend({
     /** Squad Index */
     squadIndex: { type: Number, default: -1 },
     /** Platoon Index */
-    platoonIndex: { type: Number, default: -1 },
+    platoonId: { type: Number, default: -1 },
   },
 
   data() {
@@ -52,8 +52,8 @@ export default Vue.extend({
     };
   },
   computed: {
-    platoonID() : number {
-      return this.$store.getters.getPlatoonIDByIndex(this.platoonIndex);
+    platoonIndex() : number {
+      return this.$store.getters.getPlatoonIndexByID(this.platoonId);
     },
     storedPosition() : Coord {
       return this.$store.getters.getSquadByID(this.platoonIndex, this.squadIndex).pos;
@@ -78,10 +78,10 @@ export default Vue.extend({
       };
 
       // If we are dragging, we want to use the temporary position to avoid recalculating the renderPos
-      if (this.platoonID % 4 > 0) {
-        const deg = 45 + this.platoonID * 70;
-        const sizeA = 5 + ((this.platoonID * 3) % 7);
-        const sizeB = 5 + ((this.platoonID * 4) % 7);
+      if (this.platoonId % 4 > 0) {
+        const deg = 45 + this.platoonId * 70;
+        const sizeA = 5 + ((this.platoonId * 3) % 7);
+        const sizeB = 5 + ((this.platoonId * 4) % 7);
         style.background = `repeating-linear-gradient(${deg}deg, ${brighter}, ${brighter} ${sizeA}px,
          ${normal} ${sizeB}px, ${normal} ${sizeA + sizeB}px)`;
       } else {
@@ -173,18 +173,18 @@ export default Vue.extend({
       if (this.startPosition.x - this.forcedScreenPos.x === 0 && this.startPosition.y - this.forcedScreenPos.y === 0) {
         // Click
         this.$store.commit('setSquadMarkerArrowState', {
-          pID: this.platoonID,
+          pID: this.platoonId,
           sID: this.squadIndex,
           toggle: true,
         });
       } else {
         // Drag
         this.$store.commit('setSquadMarkerArrowState', {
-          pID: this.platoonID, sID: this.squadIndex, toggle: false, value: event.shiftKey,
+          pID: this.platoonId, sID: this.squadIndex, toggle: false, value: event.shiftKey,
         });
       }
       this.$store.commit('setSquadPosition', {
-        pID: this.platoonID, sID: this.squadIndex, xPos: this.mapPos.x, yPos: this.mapPos.y,
+        pID: this.platoonId, sID: this.squadIndex, xPos: this.mapPos.x, yPos: this.mapPos.y,
       });
 
       // End event hooks to keep performance high

@@ -1,20 +1,15 @@
 <template>
   <div id="MapContentBox">
-    <div
-      v-for="platoonIndex in $store.getters.getPlatoonCount"
-      :key="platoonIndex"
-    >
-      <map-squad-marker
-        v-for="squadID in 4"
-        :key="squadID"
-        :platoon-index="(platoonIndex - 1)"
-        :squad-index="(squadID - 1)"
-        :render-offset="{ x: 17, y: 17 }"
-        :is-dragging-camera="tracker.isDraggingCamera"
-        :tracker="tracker"
-        :skip-frame-limit="5"
-      />
-    </div>
+    <map-squad-marker
+      v-for="squad in allSquads"
+      :key="`Squad${squad.squadID}P${squad.platoonID}`"
+      :platoon-id="squad.platoonID"
+      :squad-index="squad.squadID"
+      :render-offset="{ x: 17, y: 17 }"
+      :is-dragging-camera="tracker.isDraggingCamera"
+      :tracker="tracker"
+      :skip-frame-limit="5"
+    />
     <map-bounding-box
       :render-offset="{ x:0, y:0 }"
       :is-dragging-camera="tracker.isDraggingCamera"
@@ -26,6 +21,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapGetters } from 'vuex';
 
 import MapSquadMarker from '../Platoons/MapSquadMarker.vue';
 import MapBoundingBox from './MapBoundingBox.vue';
@@ -41,13 +37,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    allSquads() : any {
-      const squads : Object[] = [];
-      for (let i = 0; i < this.$store.getters.getPlatoonCount; i++) {
-        squads.concat(squads, this.$store.getters.getPlatoonByID(i).squads);
-      }
-      return squads;
-    },
+    ...mapGetters(['allSquads']),
   },
   mounted() {
     this.$store.commit('setContinentData', continentData);

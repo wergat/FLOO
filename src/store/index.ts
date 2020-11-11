@@ -99,10 +99,15 @@ export default new Vuex.Store({
     isUIFocused: (state) : boolean => state.focus === 1,
     UISize: (state) : number => state.UISize,
     platoons: (state) : Platoon[] => state.platoons,
-    getPlatoonByIndex: (state) => (index: number) : Platoon => state.platoons[index],
-    getPlatoonIndexByID(state, id: number): number {
-      return state.platoons.map((platoon) => platoon.id).indexOf(id);
+    allSquads(state) : Squad[] {
+      let squads : Squad[] = [];
+      for (let i = 0; i < state.platoons.length; i++) {
+        squads = squads.concat(state.platoons[i].squads);
+      }
+      return squads;
     },
+    getPlatoonByIndex: (state) => (index: number) : Platoon => state.platoons[index],
+    getPlatoonIndexByID: (state) => (id: number): number => state.platoons.map((platoon) => platoon.id).indexOf(id),
     getPlatoonIDByIndex: (state) => (index: number) : number => state.platoons[index].id,
     getPlatoonCount: (state) : number => state.platoons.length,
     getSquadByID: (state) => (pID: number, sID: number) : Squad => state.platoons[pID].squads[sID],
@@ -137,10 +142,10 @@ export default new Vuex.Store({
       const spread = 200;
       const fix = spread / 2;
       pt.squads = [
-        new Squad(pt.id, 'a', { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
-        new Squad(pt.id, 'b', { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
-        new Squad(pt.id, 'c', { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
-        new Squad(pt.id, 'd', { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
+        new Squad(pt.id, 0, { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
+        new Squad(pt.id, 1, { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
+        new Squad(pt.id, 2, { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
+        new Squad(pt.id, 3, { x: position.x + Math.random() * spread - fix, y: position.y + Math.random() * spread - fix }),
       ];
       state.platoons.push(pt);
       state.platoons[platCounter].lightestColor = ptColor.lighten(0.5).toString();

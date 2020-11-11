@@ -24,9 +24,8 @@
             v-for="resolution in getSupportedParentResolutions"
             :key="'preso' + resolution.id"
             :value="resolution.name"
-          >
-            {{ resolution.name }}
-          </option>
+            v-text="resolution.name"
+          />
         </b-select>
         <b-select
           v-model="selectedResolutionID"
@@ -39,15 +38,14 @@
             v-for="resolution in getSupportedResolutions"
             :key="'reso' + resolution.id"
             :value="resolution.id"
-          >
-            {{ resolution.name }}
-          </option>
+            v-text="resolution.name"
+          />
         </b-select>
         <p class="control">
           <b-button
             type="is-warning"
             :size="getClassSize"
-            @click="autoDetectResolution()"
+            @click="autoDetectResolution"
           >
             Auto
           </b-button>
@@ -63,12 +61,11 @@
           :size="getClassSize"
         >
           <option
-            v-for="continent in this.$store.getters.continents"
+            v-for="continent in continents"
             :key="'cont' + continent.id"
             :value="continent.id"
-          >
-            {{ continent.name }}
-          </option>
+            v-text="continent.name"
+          />
         </b-select>
         <!-- TODO: placeholder="[Anything]" not working, workaround: ??? make color on a per-field basis?-->
         <b-select
@@ -226,7 +223,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapGetters(['showMapContent']),
+    ...mapGetters(['showMapContent', 'continents']),
     UISize: {
       get(): number {
         return this.$store.getters.UISize;
