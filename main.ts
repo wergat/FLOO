@@ -29,6 +29,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
+    icon: path.join(__dirname, '../img/icon.ico'),
   });
 
   // and load the index.html of the app.
@@ -39,6 +40,11 @@ function createWindow() {
 
   console.log('Window Created');
 }
+
+const nativeImage = require('electron').nativeImage;
+var image = nativeImage.createFromPath(path.join(__dirname, '../img/icon.ico')); 
+image.setTemplateImage(true);
+
 
 // TODO: Move these into smaller functions
 /** Focus changes on mouse down, usually, so we can check if the current window is planetside or not or something else */
