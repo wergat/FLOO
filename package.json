@@ -7,7 +7,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build && tsc",
-    "pack": "tsc && electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar.unpack=\"*.+(node|dll)\" --icon=./img/icon.ico",
+    "pack": "tsc && electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar.unpack=\"*.+(node|dll)\" --asar.unpackDir=\"dist\" --icon=./img/icon.ico",
     "make": "electron-installer-windows --config installer-config.json",
     "lint": "vue-cli-service lint",
     "start": "tsc && electron .",
