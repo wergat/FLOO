@@ -6,4 +6,5 @@ module.exports = {
   css: {
     requireModuleExtension: false,
   },
+  lintOnSave: true,
 };
