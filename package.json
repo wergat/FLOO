@@ -1,61 +1,89 @@
 {
   "name": "FLOO",
-  "version": "0.3.1-beta",
-  "main": "dist/main.js",
+  "version": "0.6.0-beta",
+  "private": true,
   "description": "Force Lead Organizing OwOrlay",
-  "scripts": {
-    "start": "tsc && npm run css-watch && electron-forge start",
-    "css-build": "node-sass --omit-source-map-url sass/mystyles.scss css/mystyles.css",
-    "css-watch": "npm run css-build --watch",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts ."
-  },
-  "repository": "https://github.com/wergat/FLOO",
-  "keywords": [],
   "author": "Wergat",
-  "license": "MIT License",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "make": "electron-forge make",
+    "package": "electron-forge package",
+    "publish": "electron-forge publish",
+    "start": "tsc && electron-forge start",
+    "fbs": "vue-cli-service lint --fix && npm run build && npm run start"
+  },
+  "main": "dist/main.js",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.1",
+    "@types/color": "^3.0.1",
+    "buefy": "^0.9.3",
+    "color": "^3.1.2",
+    "core-js": "^3.6.5",
+    "electron": "^8.5.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^6.0.0",
+    "iohook": "^0.6.6",
+    "is-electron": "^2.2.0",
+    "node-abi": "^2.19.1",
+    "vue": "^2.6.12",
+    "vuex": "^3.4.0"
+  },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.53",
     "@electron-forge/maker-deb": "^6.0.0-beta.53",
     "@electron-forge/maker-rpm": "^6.0.0-beta.53",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.53",
     "@electron-forge/maker-zip": "^6.0.0-beta.53",
-    "bulma": "^0.9.1",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "^4.5.8",
+    "@vue/cli-plugin-typescript": "~4.5.0",
+    "@vue/cli-plugin-vuex": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/eslint-config-airbnb": "^5.0.2",
+    "@vue/eslint-config-typescript": "^5.0.2",
+    "babel-eslint": "^10.1.0",
     "electron": "^8.5.2",
     "electron-rebuild": "^2.0.3",
-    "node-sass": "^4.14.1",
+    "eslint": "^7.12.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-jsx-a11y": "^6.3.0",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-vue": "^6.2.2",
     "tslint": "^6.1.3",
     "typescript": "^3.9.7",
-    "vue-devtools": "^5.1.4"
+    "vue-devtools": "^5.1.4",
+    "vue-template-compiler": "^2.6.11"
   },
-  "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.1",
-    "@types/color": "^3.0.1",
-    "buefy": "^0.9.3",
-    "color": "^3.1.2",
-    "electron-squirrel-startup": "^1.0.0",
-    "electron-store": "^6.0.0",
-    "iohook": "^0.6.6",
-    "node-abi": "^2.19.1",
-    "vue": "^2.6.12"
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "@vue/airbnb",
+      "@vue/typescript/recommended"
+    ],
+    "parser": "vue-eslint-parser",
+    "parserOptions": {
+      "parser": "babel-eslint",
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
+    "rules": {}
   },
+  "browserslist": [
+    "Electron 8.5.2"
+  ],
   "cmake-js": {
     "runtime": "electron",
     "runtimeVersion": "^10.1.2"
-  },
-  "iohook": {
-    "targets": [
-      "node-64",
-      "electron-76"
-    ],
-    "platforms": [
-      "win32"
-    ],
-    "arches": [
-      "x64"
-    ]
   },
   "config": {
     "forge": {
@@ -72,5 +100,20 @@
         }
       ]
     }
-  }
+  },
+  "iohook": {
+    "targets": [
+      "node-64",
+      "electron-76"
+    ],
+    "platforms": [
+      "win32"
+    ],
+    "arches": [
+      "x64"
+    ]
+  },
+  "keywords": [],
+  "license": "MIT License",
+  "repository": "https://github.com/wergat/FLOO"
 }

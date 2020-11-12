@@ -1,21 +1,46 @@
 {
   "compilerOptions": {
+    "target": "esnext",
+    "module": "CommonJS",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "dist",
     "noImplicitAny": true,
     "noImplicitThis": false,
-    "inlineSourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "types": [
+      "webpack-env"
+    ],
     "paths": {
+      "@/*": [
+        "src/*"
+      ],
       "*": [
         "node_modules/*"
       ]
     },
-    "target": "ES2020",
-    "module": "CommonJS",
-    "jsx": "react-native",
-    "moduleResolution": "node"
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx", "main.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
