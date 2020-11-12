@@ -1,13 +1,13 @@
 {
   "name": "FLOO",
-  "version": "0.6.2-beta",
+  "version": "0.6.3-beta",
   "private": true,
   "description": "Force Lead Organizing OwOrlay",
   "author": "Wergat",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build && tsc",
-    "pack": "tsc && electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar.unpack=\"*.+(node|dll)\" --asar.unpackDir=\"dist\" --icon=./img/icon.ico",
+    "pack": "tsc && electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar.unpack=\"*.+(node|dll)\" --asar.unpackDir=\"img\" --icon=./img/icon.ico",
     "make": "electron-installer-windows --config installer-config.json",
     "lint": "vue-cli-service lint",
     "start": "tsc && electron .",
@@ -16,7 +16,6 @@
   "main": "dist/main.js",
   "dependencies": {
     "@types/color": "^3.0.1",
-    "asar": "^3.0.3",
     "buefy": "^0.9.4",
     "color": "^3.1.3",
     "core-js": "^3.7.0",
@@ -24,7 +23,6 @@
     "electron-store": "^6.0.1",
     "iohook": "^0.6.6",
     "is-electron": "^2.2.0",
-    "node-abi": "^2.19.1",
     "tslib": "^2.0.3",
     "vue": "^2.6.12",
     "vuex": "^3.4.0"
