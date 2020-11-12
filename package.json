@@ -7,15 +7,16 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build && tsc",
-    "setup": "electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar --icon=./img/icon.ico",
+    "pack": "tsc && electron-packager . FLOO --platform win32 --arch x64 --out out/ --overwrite --ignore=\"^/src|^/public\" --asar.unpack=\"*.+(node|dll)\" --icon=./img/icon.ico",
     "make": "electron-installer-windows --config installer-config.json",
     "lint": "vue-cli-service lint",
     "start": "tsc && electron .",
-    "full": "npm run build && npm run setup && npm run make"
+    "full": "npm run build && npm run pack && npm run make"
   },
   "main": "dist/main.js",
   "dependencies": {
     "@types/color": "^3.0.1",
+    "asar": "^3.0.3",
     "buefy": "^0.9.4",
     "color": "^3.1.3",
     "core-js": "^3.7.0",
