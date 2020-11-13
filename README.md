@@ -13,8 +13,9 @@ Requires the game to be started in windowed mode, as it does not hook into the g
  -  Change UI scale and position
 
 ## Keep this in mind
- - Enable grid ingame, the map bounding box should align with it.
- - When the map and the overlay are not synced, zoom out fully and drag the map from the top left to the bottom right
+ - Enable grid ingame, the map bounding box (black box) should align with it.
+ - The overlay tracks your mouse movements and simulates how the ingame map should behave. It's not perfect and can desync.
+ - When the map and the overlay are not synced, zoom out fully and drag the map until one corner of the bounding box aligns.
  - Don't zoom in/out and drag the map around at the same time, ingame map behaves erraticly and i have yet to simulate that properly.
  - After clicking on the overlay, click once on the ingame map before dragging the ingame map around again to prevent sudden map movements.
 
@@ -25,8 +26,8 @@ Requires the game to be started in windowed mode, as it does not hook into the g
   A: Even with the extensive API PS2 proviedes, you can't access a lot of information that is important to a force lead, like base capture timers, hex pop and bastion position/status.  
 - #### Q: I've found an error/bug/have a suggestion  
   A: check if there is an issue for that already, if not, just open one.  
-- #### Q: My Antivirus is blocking the app.  
-  A: Sir, this is a github. Try to convince it to accept it, there is not much i can do. If you aren't happy with the distributable i provided, you can always build it yourself.  
+- #### Q: My Antivirus is blocking the installer.  
+  A: Sir, this is a github. Try to convince your AV to accept it, it will probably run fine once installed. You can also always build it yourself.  
 - #### Q: Will i be banned for using this programm?  
   A: This overlay does not hook into the game or game files in any way. Thats why there will be slight difference between overlay UI and in-game UI elements, and you can't use this overlay with the game in fullscreen mode.  
 - #### Q: Does this app require an internet connection?  
