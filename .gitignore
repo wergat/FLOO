@@ -35,5 +35,3 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-installer-config.json
-CARoot.pfx

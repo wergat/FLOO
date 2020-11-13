@@ -36,5 +36,6 @@ export default Vue.extend({
 html {
   background-color: transparent !important;
   overflow: hidden !important;
+  user-select: none;
 }
 </style>
