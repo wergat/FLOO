@@ -232,6 +232,7 @@ export default Vue.extend({
 
 #left-bounding-box {
   position: absolute;
+  z-index: 100;
 }
 
 #left-box-content > section {

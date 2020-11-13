@@ -1,0 +1,6 @@
+{
+    "dest": "out/installers/",
+    "src": "out/FLOO-win32-x64/",
+    "animation": "img/smallCarl.gif",
+    "icon": "img/icon.ico"
+  }
