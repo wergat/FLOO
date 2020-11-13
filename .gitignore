@@ -35,4 +35,3 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-Cert.pfx
