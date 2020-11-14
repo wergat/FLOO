@@ -5,7 +5,7 @@ import {
   getDefaultPlatoon, loadSetting, savePlatoonData, saveSettings, saveCachedData,
 } from '../unsorted/StoreHandler';
 import {
-  Platoon, Squad, Coord, continent,
+  Platoon, Squad, Coord, Continent,
 } from '../assets/classes';
 
 Vue.use(Vuex);
@@ -111,8 +111,8 @@ export default new Vuex.Store({
     getPlatoonIDByIndex: (state) => (index: number) : number => state.platoons[index].id,
     getPlatoonCount: (state) : number => state.platoons.length,
     getSquadByID: (state) => (pID: number, sID: number) : Squad => state.platoons[pID].squads[sID],
-    continents: (state) : continent[] => state.continents,
-    getContinentByID: (state) => (id: number) : continent => state.continents[id],
+    continents: (state) : Continent[] => state.continents,
+    getContinentByID: (state) => (id: number) : Continent => state.continents[id],
     UIColor: (state) : string => state.UIColor,
   },
   mutations: {
