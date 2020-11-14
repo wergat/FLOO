@@ -58,5 +58,35 @@
             "x": 23150,
             "y": 23150
         }
+    },
+    {
+        "id": 2,
+        "resolution": {
+            "x": 2560,
+            "y": 1017
+        },
+        "parent": {
+            "x": 2560,
+            "y": 1080
+        },
+        "detected": {
+            "x": 2560,
+            "y": 1040
+        },
+        "resolutionScale": 0.75,
+        "mapBoundingBox": {
+            "topLeft": {
+                "x": 889,
+                "y": 142
+            },
+            "bottomRight": {
+                "x": 1672,
+                "y": 920
+            }
+        },
+        "mapSize": {
+            "x": 23150,
+            "y": 23150
+        }
     }
 ]

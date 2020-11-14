@@ -5,28 +5,6 @@ interface Rect {
     bottomRight: { x: number; y: number };
 }
 
-interface draggableHTMLElement extends HTMLElement {
-    isSquad: boolean;
-}
-
-interface platoonHTMLElement extends draggableHTMLElement {
-    platoon: number; squad: number;
-}
-
-interface mapMarkerHTMLElement extends draggableHTMLElement {
-    mapMarkerID: number;
-}
-
-class MapMarker {
-    pos: Coord = { x: 0, y: 0 };
-
-    faction: number = -1;
-
-    type: number = -1;
-
-    isRendered = true;
-}
-
 class Squad {
     /** Number/ID of platoon this squad is a part of */
     platoonID: number;
@@ -81,20 +59,17 @@ class Platoon {
     }
 }
 
-interface warpgate {
+interface Warpgate {
     name: string;
     x: number;
     y: number;
     id: number;
 }
 
-interface continent {
+interface Continent {
     name: string;
     id: number;
-    /** DONT USE THIS FOR NOW. TODO:FIND OUT WHY CONTINENT SIZE IS DIFFERENT DEPENDING ON RESOLUTION */
-    mapBoxSize: Coord;
-    UIColor: { primary: string; secondary: string };
-    warpgates: warpgate[];
+    warpgates: Warpgate[];
 }
 
 interface ResolutionSettings {
@@ -107,13 +82,6 @@ interface ResolutionSettings {
     mapSize: Coord;
 }
 
-interface squadMarkerSizeSettings {
-    name: string;
-    radius: number;
-    arrowDistance: number;
-}
-
 export {
-  Coord, Rect, Platoon, Squad, warpgate, continent, ResolutionSettings, platoonHTMLElement,
-  draggableHTMLElement, squadMarkerSizeSettings, MapMarker, mapMarkerHTMLElement,
+  Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings
 };
