@@ -2,7 +2,7 @@ import isElectron from 'is-electron';
 import { Coord, ResolutionSettings } from '../assets/classes';
 import resolutionData from './resolutionData.json';
 
-let ipcRenderer : any;
+let ipcRenderer: any;
 if (isElectron()) {
   ipcRenderer = window.require('electron').ipcRenderer;
 }
@@ -11,7 +11,7 @@ if (isElectron()) {
  * getResolution resurns the resolution of the current screen
  * Gets the current resolution from the ipc renderer if electron exits, otherwise returns window width/height
  */
-function getResolution() : Coord {
+function getResolution(): Coord {
   if (isElectron()) {
     // TODO: Check if its needed to change this to async
     return ipcRenderer.sendSync('get-resolution');
@@ -37,11 +37,11 @@ function getClosestResolutionID(size: Coord): number {
   }
 }
 
-function getResolutionByID(id : number) : ResolutionSettings {
+function getResolutionByID(id: number): ResolutionSettings {
   return resolutionData[id];
 }
 
-function getResolutionCount() : number {
+function getResolutionCount(): number {
   return resolutionData.length;
 }
 

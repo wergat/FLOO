@@ -28,7 +28,7 @@ const Tracker = new Vue({
     };
   },
   methods: {
-    start() {
+    start(): void {
       if (!isElectron()) {
         console.log('Browser detected');
         document.addEventListener('mousemove', this.newMoveEvent);
@@ -42,7 +42,7 @@ const Tracker = new Vue({
       setInterval(this.checkMoveEvent, 25);
     },
 
-    handleMouseDown(event: any) {
+    handleMouseDown(event: any): void {
       // Check if we click on an element we want to click on
       // We are using any above, but its acutally mouseEvent
       // For some reason the linter doesnt know event.target.className exists
@@ -69,12 +69,12 @@ const Tracker = new Vue({
       }
     },
 
-    newMoveEvent(event: MouseEvent) {
+    newMoveEvent(event: MouseEvent): void {
       this.hasNewEvent = true;
       this.newEvent = event;
     },
 
-    checkMoveEvent() {
+    checkMoveEvent(): void {
       if (this.hasNewEvent) {
         this.handleMapDrag(this.newEvent);
         this.hasNewEvent = false;
@@ -82,7 +82,7 @@ const Tracker = new Vue({
     },
 
     /** Handles the map and camera positions when the camera gets dragged around */
-    handleMapDrag(event : MouseEvent) {
+    handleMapDrag(event: MouseEvent): void {
       if (this.isDraggingCamera) {
         // Calculate the camera movement based on camera render size (zoom) and drag delta
         // Summing the total distance moved from the start position
@@ -102,7 +102,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleMouseUp(event: MouseEvent) {
+    handleMouseUp(event: MouseEvent): void {
       if (this.isDraggingCamera) {
         // Save Camera settings
         Camera.setCameraPosition(
@@ -117,7 +117,7 @@ const Tracker = new Vue({
       }
     },
 
-    handleMouseWheel(scrollEvent: WheelEvent) {
+    handleMouseWheel(scrollEvent: WheelEvent): void {
       if (this.isDraggingCamera) { return; }
       // Update the camera when we zoom. Update the other stuff only if zoom actually changed
       // Also clamp the deltaY to [-1,1] to prevent too fast scrolling.

@@ -29,10 +29,11 @@ const Camera = new Vue({
 
     /** Zoom level size factors */
     // TODO: Investigate if X and Y screen scale at the same pace
-    factor: [1, 1.4, 2.1, 3.425, 6.235, 12.24, 18],
-    // First calc:     [1, 1.4,    2.1,    3.415,  6.23,   12.15,  17.93];
-    // Second calc:    [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18];
-    // 1080p calc:     [1, 1.405,  2.105,  3.428,  6.226,  12.22,  18];
+    factor: [1, 1.405,  2.103,  3.428,  6.228,  12.217, 17.98],
+    // First calc:     [1, 1.4,    2.1,    3.415,  6.23,   12.15,  17.93],
+    // Second calc:    [1, 1.4,    2.1,    3.425,  6.235,  12.24,  18],
+    // 1080p calc:     [1, 1.405,  2.105,  3.428,  6.226,  12.22,  18],
+    // 4k calc:        [1, 1.405,  2.103,  3.428,  6.228,  12.217, 17.98],
     /** Is the camera currently zooming? Used for animations, mostly */
     isZooming: false,
   },
@@ -89,17 +90,17 @@ const Camera = new Vue({
   },
   methods: {
     /** Sets isZooming to false */
-    stopZooming() {
+    stopZooming(): void {
       this.isZooming = false;
     },
     /** Sets the top left position of the camer in screen space  */
-    setCameraPosition(_x: any, _y: any) {
+    setCameraPosition(_x: any, _y: any): void {
       this.onMapPos = { x: _x, y: _y };
     },
     /** Clamps the camera to a position within the mapspaceCorners of the given map
      * @returns true if the position actually changed
     */
-    clampCameraPosition() {
+    clampCameraPosition(): boolean {
       const oldPos = { x: this.onMapPos.x, y: this.onMapPos.y };
       // Clamp Map Corner Position to Map Size Bounds
       this.onMapPos = this.clampMapCoordinates(this.onMapPos);
@@ -108,7 +109,7 @@ const Camera = new Vue({
     /** Helper function to clamp camera within bounds of mapspace
      * given coords, returns clapmed coords
      */
-    clampMapCoordinates(posArg : Coord): Coord {
+    clampMapCoordinates(posArg: Coord): Coord {
       const pos = { x: posArg.x, y: posArg.y };
       if (pos.x < -this.mapSpaceCorners.topLeft.x) {
         pos.x = -this.mapSpaceCorners.topLeft.x;
@@ -130,7 +131,7 @@ const Camera = new Vue({
     /** Helper function to clamp camera within bounds of screenspace
      * given coords, returns clapmed coords
      */
-    clampScreenCoordinates(posArg : Coord): Coord {
+    clampScreenCoordinates(posArg: Coord): Coord {
       const pos = { x: posArg.x, y: posArg.y };
       if (pos.x < -this.screenSpaceCorners.topLeft.x) {
         pos.x = -this.screenSpaceCorners.topLeft.x;
@@ -156,7 +157,7 @@ const Camera = new Vue({
      * @param zoom change of the zooom level
      * @returns true if the zoom level changed
      */
-    handleZoom(xPos : number, yPos : number, zoom : number): boolean {
+    handleZoom(xPos: number, yPos: number, zoom: number): boolean {
       // Mouse position (usually) to zoom in on
       const mousePos = { x: xPos, y: yPos };
       // Cache the old zoom level
@@ -178,7 +179,7 @@ const Camera = new Vue({
     },
 
     /** Loads given resolution settings into the camera */
-    loadResolution(resoData : ResolutionSettings): void {
+    loadResolution(resoData: ResolutionSettings): void {
       this.windowSize = resoData.resolution;
       this.continentSize = resoData.mapSize;
       this.screenSpaceCorners = resoData.mapBoundingBox;
