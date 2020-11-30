@@ -23,10 +23,14 @@ const Tracker = new Vue({
       isHandlingEnabled: true,
       // Currently dragging camera?
       isDraggingCamera: false,
+      // Started dragging outside the game? Needed so simulate bug in game
+      // where the start drag position is set even when the mouse is outside of window
+      // and does not reset when starting to drag inside of it again
+      dragOutside: false,
     };
   },
   methods: {
-    start() {
+    start(): void {
       if (isElectron()) {
         /* eslint-disable global-require */
         const { ipcRenderer } = window.require('electron');
@@ -52,24 +56,46 @@ const Tracker = new Vue({
         // Reset all drag coordinates and tracked vectors etc
         this.dragMovement = { x: 0, y: 0 };
         this.clampedDragMovement = { x: 0, y: 0 };
-        this.dragStartPosition = { x: Camera.zoomFactor.x * message.x, y: Camera.zoomFactor.y * message.y };
-        this.relativeCamPositionToDragStart = {
-          x: Camera.onMapPos.x - this.dragStartPosition.x,
-          y: Camera.onMapPos.y - this.dragStartPosition.y,
-        };
         this.lastDragPosition = { x: message.x, y: message.y };
+
+        // If we are clicking outside the window, the first click has to save its start position
+        if (!this.dragOutside) {
+          this.dragStartPosition = { x: Camera.zoomFactor.x * message.x, y: Camera.zoomFactor.y * message.y };
+          this.relativeCamPositionToDragStart = {
+            x: Camera.onMapPos.x - this.dragStartPosition.x,
+            y: Camera.onMapPos.y - this.dragStartPosition.y,
+          };
+        }
 
         // If we are hovering over the map and are not dragging something around right now,
         // drag the map if we drag the mouse around TODO: Add actual area for map to be checked against, so you dont drag stuff from offscreen
         if (this.$store.getters.isGameFocused) {
           this.isDraggingCamera = true;
+        } else {
+          this.dragOutside = true;
         }
+
+
+
+        console.log(`${Date.now()} Focus: ${this.$store.getters.isGameFocused}, DragOutside: ${this.dragOutside}`);
       }
     },
 
     /** Handles the map and camera positions when the camera gets dragged around */
     handleMouseDrag(message: any): void {
       if (this.isDraggingCamera) {
+        // Make the camera jump to where the drag started, if it was started outside the window
+        // But the camera only jumps on drag, so thats where we need to trigger it
+        if (this.dragOutside) {
+          this.dragMovement = {
+            x: this.dragStartPosition.x * Camera.invZoomFactor.x - message.x,
+            y: this.dragStartPosition.y * Camera.invZoomFactor.y - message.y
+          }
+          console.log(`Corrected by: ${this.dragMovement.x}|${this.dragMovement.y}`);
+          // Reset this, so the mouse only jumps once
+          this.dragOutside = false;
+        }
+
         // Calculate the camera movement based on camera render size (zoom) and drag delta
         // Summing the total distance moved from the start position
         this.dragMovement.x += this.lastDragPosition.x - message.x;
@@ -99,7 +125,13 @@ const Tracker = new Vue({
         Camera.clampCameraPosition();
       }
       if (message.button === 1) {
+        // Reset this only when mouseup gets fires inside the game, so it does not reset
+        // The position that was first set when mouse was outside of the game
+        if (this.$store.getters.isGameFocused) {
+          this.dragOutside = false;
+        }
         this.isDraggingCamera = false;
+
       }
     },
 

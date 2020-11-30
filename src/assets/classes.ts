@@ -83,5 +83,5 @@ interface ResolutionSettings {
 }
 
 export {
-  Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings
+  Coord, Rect, Platoon, Squad, Warpgate, Continent, ResolutionSettings,
 };

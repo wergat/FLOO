@@ -2,12 +2,12 @@
   <b-tab-item
     label="Platoons"
     icon="users"
-    :disabled="!this.enabled"
+    :disabled="!enabled"
     :style="getPadding()"
   >
     <div class="container">
       <platoon-list-entry
-        v-for="(platoon, index) of this.$store.getters.platoons"
+        v-for="(platoon, index) of $store.getters.platoons"
         :key="index"
         :platoon-object="platoon"
         :platoon-id="platoon.id"
